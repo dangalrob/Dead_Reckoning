@@ -129,6 +129,15 @@ body {
   left: 18.5%;
   width: 63.0%;
   height: 7.9%;
+  flex-direction: column; /* allow the Coming Soon text to sit vertically below title! */
+}
+
+.hotspot-decade:disabled {
+  opacity: 0.55;
+  cursor: not-allowed !important;
+  pointer-events: none;
+  filter: grayscale(80%);
+  border-color: rgba(238, 221, 187, 0.05);
 }
 
 .hotspot-song {

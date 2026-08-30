@@ -456,17 +456,10 @@ export default function App() {
           {/* Buttons with dynamic text overlays */}
           <button 
             className="hotspot-decade" 
-            onClick={() => {
-              setGameType('decade');
-              setScore(0);
-              setStreak(0);
-              setLives(3);
-              setCorrectCount(0);
-              setTotalCount(0);
-              loadQuestion('decade');
-            }}
+            disabled
           >
             Name The Decade
+            <span style={{ display: 'block', fontSize: '0.42rem', textTransform: 'uppercase', marginTop: '2px', opacity: 0.75, letterSpacing: '0.5px' }}>Coming Soon</span>
           </button>
           
           <button 
