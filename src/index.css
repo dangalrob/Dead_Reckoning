@@ -376,18 +376,18 @@ body {
 /* Name the Song options list (covers static decades) */
 .song-choice-container {
   position: absolute;
-  top: 74%;
+  top: 70.8%;
   left: 8%;
   width: 84%;
-  height: 13.5%;
+  height: 16.2%;
   background: rgba(43, 15, 26, 0.95);
   border: 2px solid #5c3d2e;
-  border-radius: 12px;
-  padding: 0.35rem;
+  border-radius: 14px;
+  padding: 0.45rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
-  gap: 0.35rem 0.45rem;
+  gap: 0.45rem 0.55rem;
   box-shadow: 0 4px 10px rgba(0,0,0,0.6);
   z-index: 10;
 }
@@ -398,8 +398,8 @@ body {
   color: #eeddbb;
   font-family: 'Outfit', 'Georgia', serif;
   font-weight: 800;
-  font-size: 0.72rem;
-  padding: 0.35rem 0.4rem;
+  font-size: 0.84rem;
+  padding: 0.48rem 0.5rem;
   border-radius: 8px;
   text-align: center;
   white-space: nowrap;
@@ -1065,4 +1065,17 @@ body {
   background-color: rgba(238, 221, 187, 0.15);
   color: #fff;
   text-shadow: 0 0 6px rgba(238, 221, 187, 0.8);
+}
+
+/* Mobile Responsive Scaling: utilize viewport space better on iPhones/smaller viewports */
+@media (max-width: 480px) {
+  #root {
+    padding: 0;
+    overflow: hidden;
+  }
+  .game-card {
+    /* Scale card to fit screen width (aspect ratio preserved, absolute coords intact!) */
+    transform: scale(min(1.22, calc(100vw / 315)));
+    transform-origin: center center;
+  }
 }

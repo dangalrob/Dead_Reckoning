@@ -134,7 +134,7 @@ export default function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
-  const [totalTimeLimit, setTotalTimeLimit] = useState(15);
+  const [totalTimeLimit, setTotalTimeLimit] = useState(10);
   
   const [guessResult, setGuessResult] = useState(null);
   const [lastPointsEarned, setLastPointsEarned] = useState(0);
@@ -158,9 +158,9 @@ export default function App() {
     }
   };
 
-  // Default time limit (15 seconds)
+  // Default time limit (10 seconds)
   const getDifficultyTime = () => {
-    return 15;
+    return 10;
   };
 
   // Load a brand new question (pre-load & pre-seek audio for instant lag-free play)
@@ -312,7 +312,10 @@ export default function App() {
       } else {
         setStreak(0);
         setLives(prev => prev - 1);
-        setLastPointsEarned(0);
+        // Penalty: deduct 50 points for incorrect guess, floor at 0
+        const penalty = 50;
+        setScore(prev => Math.max(0, prev - penalty));
+        setLastPointsEarned(-penalty);
         setLastSpeedBonus(0);
       }
 
@@ -615,7 +618,7 @@ export default function App() {
       {/* Screen 3: Guess Reveal / Game Over Screen */}
       {screen === 'reveal' && guessResult && (
         <div className={`game-card bg-reveal ${!guessResult.correct ? 'wrong' : ''}`}>
-          {lives > 0 ? (
+          {lives > 0 && totalCount < 10 ? (
             // --- Normal Round Reveal ---
             <>
               {/* Correct Banner Overlay (Scroll) */}
@@ -675,18 +678,33 @@ export default function App() {
               </button>
             </>
           ) : (
-            // --- Game Over Screen (Strikes Out) ---
+            // --- Game Over Screen (Strikes Out or Victory Complete) ---
             <>
               {/* Game Over Banner Overlay (Scroll) */}
-              <div className="reveal-banner-container"></div>
+              <div className="reveal-banner-container">
+                {lives > 0 && guessResult.correct && (
+                  <span className="reveal-banner-success">VICTORY!</span>
+                )}
+              </div>
 
               {/* Single Central Parchment Content Card (Game Over Mode) */}
               <div className="reveal-cardboard-details reveal-did-you-know" style={{ justifyContent: 'center' }}>
                 <div className="reveal-card-track-info" style={{ marginBottom: '8px' }}>
-                  {gameType === 'song' ? `CORRECT SONG:` : `CORRECT DECADE:`}
-                  <div style={{ color: 'var(--crimson)', marginTop: '2px' }}>
-                    {gameType === 'song' ? `"${guessResult.correctSong.toUpperCase()}"` : getFullDecade(guessResult.correctDecade)}
-                  </div>
+                  {lives === 0 ? (
+                    <>
+                      {gameType === 'song' ? `CORRECT SONG:` : `CORRECT DECADE:`}
+                      <div style={{ color: 'var(--crimson)', marginTop: '2px' }}>
+                        {gameType === 'song' ? `"${guessResult.correctSong.toUpperCase()}"` : getFullDecade(guessResult.correctDecade)}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ color: 'var(--espresso)', textShadow: '1px 1px 0px rgba(255,255,255,0.4)', fontSize: '1.05rem', fontFamily: 'Sancreek, serif' }}>⚡ VICTORY! ⚡</div>
+                      <div style={{ color: 'var(--crimson)', marginTop: '2px', fontSize: '0.78rem' }}>
+                        COMPLETED 10 ROUNDS!
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="reveal-divider"></div>
