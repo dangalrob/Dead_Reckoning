@@ -365,6 +365,7 @@ export default function App() {
       });
       setScoreSaved(true);
       fetchLeaderboard();
+      setActiveLeaderboardType(gameType);
       setScreen('leaderboard');
     } catch (err) {
       console.error(err);
