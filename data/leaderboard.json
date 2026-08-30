@@ -1,0 +1,60 @@
+{
+  "decade": [
+    {
+      "name": "DGR",
+      "score": 2600,
+      "avatar": "bear",
+      "date": "2026-08-28"
+    },
+    {
+      "name": "DGR",
+      "score": 1240,
+      "avatar": "steelie",
+      "date": "2026-08-28"
+    },
+    {
+      "name": "JGB",
+      "score": 850,
+      "avatar": "bear",
+      "date": "2026-08-28"
+    },
+    {
+      "name": "GDH",
+      "score": 720,
+      "avatar": "steelie",
+      "date": "2026-08-28"
+    },
+    {
+      "name": "DAN",
+      "score": 640,
+      "avatar": "bear",
+      "date": "2026-08-28"
+    },
+    {
+      "name": "CHR",
+      "score": 540,
+      "avatar": "charlie",
+      "date": "2026-08-28"
+    },
+    {
+      "name": "DAN",
+      "score": 200,
+      "avatar": "bear",
+      "date": "2026-08-28"
+    }
+  ],
+  "song": [
+    {
+      "name": "BOB",
+      "score": 5520,
+      "difficulty": "medium",
+      "date": "2026-08-28"
+    },
+    {
+      "name": "DAN",
+      "score": 1668,
+      "difficulty": "expert",
+      "date": "2026-08-28"
+    }
+  ]
+}

@@ -1,0 +1,897 @@
+/* Grateful Dead Tour Redesign Style Sheet */
+:root {
+  --espresso: #3e2723;
+  --burgundy: #6b1d2f;
+  --crimson: #b22222;
+  --gold: #d38d35;
+  --cream: #fbf8f3;
+  --cardboard: #e6dfd3;
+}
+
+/* Base resets & Fonts */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Georgia', serif;
+  user-select: none;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background-color: #1a060d;
+}
+
+body {
+  color: var(--espresso);
+  height: 100vh;
+  /* Soft radial faded tie-dye backdrop */
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(211, 97, 53, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 85% 80%, rgba(58, 125, 140, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(229, 169, 59, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 80% 20%, rgba(107, 29, 47, 0.2) 0%, transparent 50%);
+  background-size: 150% 150%;
+  animation: tieDyeMovement 20s ease-in-out infinite alternate;
+}
+
+@keyframes tieDyeMovement {
+  0% { background-position: 0% 0% }
+  100% { background-position: 100% 100% }
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 1rem;
+  width: 100%;
+}
+
+/* Base Card with Mockup Image Backgrounds */
+.game-card {
+  width: 320px;
+  height: 544px; /* Exact 1.7 aspect ratio matching 306x520 mockup crop */
+  border-radius: 14px;
+  box-shadow: 
+    0 0 0 4px var(--cream),
+    0 0 0 8px var(--burgundy),
+    0 20px 45px rgba(26, 6, 13, 0.7);
+  position: relative;
+  overflow: hidden;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: #1a060d;
+}
+
+/* Screen Background Classes */
+.bg-menu { background-image: url('/tour_menu_bg_cleaned_v2.png'); }
+.bg-game { background-image: url('/tour_game_bg_cleaned_v2.png'); }
+.bg-game-song { background-image: url('/tour_game_song_bg.png'); }
+.bg-leaderboard { background-image: url('/tour_leaderboard_bg.png'); }
+.bg-reveal { background-image: url('/tour_reveal_bg_cleaned_v2.png'); }
+.bg-loading { background-image: url('/tour_loading_bg.png'); }
+
+/* Absolute Hotspots & Interactives */
+
+/* Dynamic Menu Scroll Text */
+.menu-scroll-title {
+  position: absolute;
+  top: 43.5%;
+  left: 22.2%;
+  width: 55.6%;
+  height: 6.8%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Outfit', 'Georgia', serif;
+  font-weight: 800;
+  font-size: 0.52rem;
+  color: #2b0f1a;
+  text-align: center;
+  line-height: 1.35;
+  letter-spacing: 0.2px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Menu Buttons Hotspots */
+.hotspot-decade, .hotspot-song, .hotspot-leaderboard {
+  position: absolute;
+  background: transparent;
+  border: 2px solid rgba(238, 221, 187, 0.12);
+  cursor: pointer;
+  border-radius: 20px;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Outfit', 'Georgia', serif;
+  font-weight: 900;
+  font-size: 0.95rem;
+  color: #eeddbb;
+  text-shadow: 2px 2px 2px #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 10;
+}
+
+.hotspot-decade {
+  top: 52.4%;
+  left: 18.5%;
+  width: 63.0%;
+  height: 7.9%;
+}
+
+.hotspot-song {
+  top: 64.2%;
+  left: 18.5%;
+  width: 63.0%;
+  height: 7.5%;
+}
+
+.hotspot-leaderboard {
+  top: 76.0%;
+  left: 18.5%;
+  width: 63.0%;
+  height: 7.5%;
+}
+
+.hotspot-rules {
+  position: absolute;
+  top: 91.9%;
+  left: 22.2%;
+  width: 55.6%;
+  height: 5.5%;
+  background: transparent;
+  border: 1.5px solid rgba(238, 221, 187, 0.12);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Outfit', 'Georgia', serif;
+  font-weight: 800;
+  font-size: 0.55rem;
+  color: #2b0f1a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 10;
+}
+
+.hotspot-decade:hover, .hotspot-song:hover, .hotspot-leaderboard:hover {
+  border-color: rgba(238, 221, 187, 0.95);
+  background-color: rgba(238, 221, 187, 0.18);
+  box-shadow: 0 0 12px rgba(238, 221, 187, 0.6), inset 0 0 8px rgba(238, 221, 187, 0.2);
+  color: #fff;
+}
+
+.hotspot-rules:hover {
+  border-color: rgba(238, 221, 187, 0.95);
+  background-color: rgba(238, 221, 187, 0.15);
+  box-shadow: 0 0 8px rgba(238, 221, 187, 0.5);
+}
+
+.hotspot-decade:active, .hotspot-song:active, .hotspot-leaderboard:active, .hotspot-rules:active {
+  transform: scale(0.97);
+}
+
+/* Gameplay HUD Overlays */
+.hud-lives {
+  position: absolute;
+  top: 7.6%;
+  left: 10.3%;
+  width: 28.5%;
+  height: 5.2%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-lives img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.hud-streak {
+  position: absolute;
+  top: 7.1%;
+  left: 48.7%;
+  width: 13.1%;
+  height: 5.9%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Outfit', 'Courier New', sans-serif !important;
+  font-weight: bold;
+  font-size: 1.15rem;
+  color: #2b0f1a;
+}
+
+.hud-score {
+  position: absolute;
+  top: 7.1%;
+  left: 73.0%;
+  width: 15.0%;
+  height: 5.9%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Outfit', 'Courier New', sans-serif !important;
+  font-weight: bold;
+  font-size: 1.15rem;
+  color: #2b0f1a;
+}
+
+/* Game Title Overlays */
+.hud-title-container {
+  position: absolute;
+  top: 17%;
+  left: 8%;
+  width: 84%;
+  height: 12%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.hud-track-name {
+  font-family: 'Sancreek', 'Georgia', serif;
+  text-transform: uppercase;
+  font-size: 1.05rem;
+  color: #eeddbb;
+  text-shadow: 2px 2px 3px rgba(0,0,0,0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  text-align: center;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* Circular play clip stamp overlay */
+.hotspot-play-clip {
+  position: absolute;
+  top: 43.9%;
+  left: 28.25%;
+  width: 43.5%;
+  height: 25.7%;
+  background: transparent;
+  border: 2px solid rgba(238, 221, 187, 0.25);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s ease-in-out;
+  z-index: 10;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+
+.hotspot-play-clip:hover {
+  border-color: rgba(238, 221, 187, 0.95);
+  background-color: rgba(238, 221, 187, 0.15);
+  box-shadow: 0 0 15px rgba(238, 221, 187, 0.7);
+}
+
+.hotspot-play-clip.playing {
+  animation: rotatePlay 8s linear infinite;
+}
+
+@keyframes rotatePlay {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.hud-timer-value {
+  position: absolute;
+  top: 41.9%;
+  left: 73.4%;
+  width: 12%;
+  height: 6%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Outfit', 'Courier New', sans-serif !important;
+  font-weight: bold;
+  font-size: 1.15rem;
+  color: #eeddbb;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+/* Gameplay Buttons */
+.game-decade-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.hotspot-game-btn {
+  position: absolute;
+  width: 34.8%;
+  height: 7.6%;
+  background: transparent;
+  border: 2px solid rgba(238, 221, 187, 0.25);
+  cursor: pointer;
+  border-radius: 16px;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+}
+
+.hotspot-btn-60s {
+  top: 66.5%;
+  left: 6.0%;
+}
+
+.hotspot-btn-70s {
+  top: 66.5%;
+  left: 59.2%;
+}
+
+.hotspot-btn-80s {
+  top: 79.3%;
+  left: 6.0%;
+}
+
+.hotspot-btn-90s {
+  top: 79.3%;
+  left: 59.2%;
+}
+
+.hotspot-game-btn:hover {
+  border-color: rgba(238, 221, 187, 0.95);
+  background-color: rgba(238, 221, 187, 0.25);
+  box-shadow: 0 0 15px rgba(238, 221, 187, 0.7);
+}
+
+.hotspot-game-btn:active {
+  transform: scale(0.96);
+}
+
+/* Name the Song options list (covers static decades) */
+.song-choice-container {
+  position: absolute;
+  top: 74%;
+  left: 8%;
+  width: 84%;
+  height: 13.5%;
+  background: rgba(43, 15, 26, 0.95);
+  border: 2px solid #5c3d2e;
+  border-radius: 12px;
+  padding: 0.35rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 0.35rem 0.45rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+  z-index: 10;
+}
+
+.song-choice-btn {
+  background: rgba(30, 10, 20, 0.9);
+  border: 2px solid #c29b53;
+  color: #eeddbb;
+  font-family: 'Outfit', 'Georgia', serif;
+  font-weight: 800;
+  font-size: 0.72rem;
+  padding: 0.35rem 0.4rem;
+  border-radius: 8px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease-in-out;
+}
+
+.song-choice-btn:hover {
+  background: rgba(141, 35, 60, 0.95);
+  border-color: #eeddbb;
+  box-shadow: 0 0 12px rgba(238, 221, 187, 0.7);
+  transform: translateY(-1px);
+}
+
+.song-choice-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Bottom Actions Row */
+.hotspot-bottom-left, .hotspot-bottom-right {
+  position: absolute;
+  top: 91.2%;
+  width: 34.8%;
+  height: 5.9%;
+  background: transparent;
+  border: 2px solid rgba(238, 221, 187, 0.12);
+  cursor: pointer;
+  border-radius: 12px;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Outfit', 'Georgia', serif;
+  font-weight: 800;
+  font-size: 0.68rem;
+  color: #eeddbb;
+  text-shadow: 1.5px 1.5px 1.5px #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hotspot-bottom-left {
+  left: 6.0%;
+}
+
+.hotspot-bottom-right {
+  left: 59.2%;
+}
+
+.hotspot-bottom-left:hover, .hotspot-bottom-right:hover {
+  border-color: rgba(238, 221, 187, 0.95);
+  background-color: rgba(238, 221, 187, 0.2);
+  box-shadow: 0 0 10px rgba(238, 221, 187, 0.6);
+}
+
+.hotspot-bottom-left:active, .hotspot-bottom-right:active {
+  transform: scale(0.96);
+}
+
+/* Leaderboard Overlay Coordinates */
+.overlay-game-title {
+  position: absolute;
+  top: 31%;
+  left: 10%;
+  width: 80%;
+  text-align: center;
+  font-family: 'Sancreek', serif;
+  font-size: 1.05rem;
+  color: #3e2723; /* Same color as LEADERBOARD banner text */
+  text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.4);
+  z-index: 10;
+  text-transform: uppercase;
+}
+
+.leaderboard-table-overlay {
+  position: absolute;
+  top: 36.5%;
+  left: 12.5%;
+  right: 12.5%;
+  height: 52%;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  z-index: 10;
+}
+
+.overlay-header {
+  display: grid;
+  grid-template-columns: 1.5fr 5fr 3.5fr;
+  color: var(--espresso);
+  font-family: 'Courier New', Courier, monospace !important;
+  font-weight: 900;
+  font-size: 0.72rem;
+  border-bottom: 2px solid var(--espresso);
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+}
+
+.overlay-row {
+  display: grid;
+  grid-template-columns: 1.5fr 5fr 3.5fr;
+  align-items: center;
+  font-family: 'Georgia', serif;
+  font-weight: bold;
+  font-size: 0.68rem;
+  color: var(--espresso);
+  padding: 2.5px 0;
+  border-bottom: none;
+}
+
+.overlay-rank-col {
+  text-align: center;
+}
+
+.overlay-name-col {
+  text-align: left;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.overlay-score-col {
+  text-align: right;
+}
+
+.no-tours-msg {
+  color: var(--espresso);
+  text-align: center;
+  font-size: 0.55rem;
+  margin-top: 1.5rem;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.hotspot-leaderboard-back {
+  position: absolute;
+  top: 91.5%;
+  left: 15%;
+  width: 70%;
+  height: 5.5%;
+  background: transparent;
+  border: 2px solid rgba(238, 221, 187, 0.25);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+}
+
+.hotspot-leaderboard-back:hover {
+  border-color: rgba(238, 221, 187, 0.95);
+  background-color: rgba(238, 221, 187, 0.2);
+  box-shadow: 0 0 10px rgba(238, 221, 187, 0.6);
+}
+
+/* Reveal Screen HUD Coordinates */
+.reveal-banner-container {
+  position: absolute;
+  top: 5.4%;
+  left: 20%;
+  width: 60%;
+  height: 11%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-family: 'Sancreek', 'Georgia', serif !important;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+.reveal-banner-success {
+  color: #2b0f1a;
+}
+
+.reveal-banner-fail {
+  color: #b71c1c;
+}
+
+.reveal-cardboard-details.reveal-did-you-know {
+  position: absolute;
+  top: 44.4%;
+  left: 11.5%;
+  width: 77%;
+  height: 26.8%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0.2rem 0.5rem;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.reveal-card-track-info {
+  font-family: 'Georgia', serif;
+  font-weight: bold;
+  font-size: 0.72rem;
+  color: var(--espresso);
+  text-align: center;
+  line-height: 1.3;
+}
+
+.reveal-decade-badge {
+  color: #ff3333;
+  font-family: 'Sancreek', 'Georgia', serif;
+  font-size: 1.05rem;
+  -webkit-text-stroke: 0.8px #000;
+  text-shadow: 1.5px 1.5px 0px #000;
+  font-weight: 900;
+  margin-left: 2px;
+  vertical-align: middle;
+}
+
+.reveal-divider {
+  width: 90%;
+  border-bottom: 1.5px dotted rgba(92, 68, 63, 0.25);
+  margin: 6px 0;
+}
+
+.reveal-card-show-details {
+  font-family: 'Georgia', serif;
+  font-size: 0.65rem;
+  color: #5c443f;
+  text-align: center;
+  line-height: 1.35;
+}
+
+.reveal-card-show-details .show-date {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 0.78rem;
+  color: var(--espresso);
+  margin-bottom: 2px;
+}
+
+.reveal-did-you-know-title {
+  font-family: 'Courier New', Courier, monospace !important;
+  font-size: 0.62rem;
+  color: #705550;
+  text-transform: uppercase;
+  font-weight: 900;
+  letter-spacing: 1px;
+  border-bottom: 1px dotted #705550;
+  padding-bottom: 2px;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+.reveal-did-you-know-text {
+  font-family: 'Georgia', serif;
+  font-size: 0.66rem;
+  line-height: 1.25;
+  color: var(--espresso);
+  font-weight: bold;
+  text-align: center;
+  margin: 0;
+}
+
+.hotspot-reveal-action {
+  position: absolute;
+  top: 80.1%;
+  left: 14.1%;
+  width: 71.8%;
+  height: 3.6%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: all 0.2s ease-in-out;
+  box-shadow: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Sancreek', 'Georgia', serif !important;
+  font-weight: bold;
+  font-size: 0.82rem;
+  color: #eeddbb;
+  text-shadow: 1.5px 1.5px 0px #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  -webkit-text-stroke: 0.3px #000;
+  letter-spacing: 0.5px;
+  z-index: 10;
+}
+
+.hotspot-reveal-action:hover {
+  transform: scale(1.03);
+  color: #fff;
+  text-shadow: 0 0 8px rgba(238, 221, 187, 0.8), 1.5px 1.5px 0px #000;
+}
+
+/* Game Over Initials Overlay Form */
+.gameover-form-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  padding: 0.2rem;
+  width: 100%;
+}
+
+.gameover-initials-input {
+  background: var(--cream);
+  border: 2px solid var(--espresso);
+  border-radius: 6px;
+  font-size: 1.4rem;
+  color: var(--espresso);
+  outline: none;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  width: 100px;
+  text-align: center;
+  margin-bottom: 0.4rem;
+}
+
+.gameover-enter-btn {
+  background: var(--burgundy);
+  color: var(--cream);
+  border: 2px solid var(--espresso);
+  font-family: 'Georgia', serif;
+  font-weight: bold;
+  font-size: 0.85rem;
+  padding: 0.35rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 1px 1px 0px var(--espresso);
+  transition: all 0.15s;
+}
+
+.gameover-enter-btn:hover {
+  background-color: var(--crimson);
+  transform: translate(-1px, -1px);
+  box-shadow: 2px 2px 0px var(--espresso);
+}
+
+/* Rank table styling overrides */
+.arcade-rank-1 { color: var(--crimson); }
+.arcade-rank-2 { color: var(--teal); }
+.arcade-rank-3 { color: var(--gold); }
+.arcade-rank-4 { color: var(--burgundy); }
+.arcade-rank-5 { color: var(--espresso); }
+
+/* Loaders */
+.loader {
+  border: 4px solid rgba(62, 39, 35, 0.05);
+  border-top: 4px solid var(--crimson);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin-loader 1s linear infinite;
+  margin: 2rem 0;
+}
+
+@keyframes spin-loader {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-family: 'Georgia', serif;
+  color: var(--burgundy);
+  font-weight: 900;
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+}
+
+.flash-text {
+  animation: flash 1.5s infinite;
+}
+
+@keyframes flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.bolt-dim {
+  opacity: 0.15;
+}
+
+/* Name the Song Play Screen Layout Overrides (Coordinates mapped from mockup media_1788120528910.jpg) */
+.bg-game-song .hud-lives {
+  top: 29.8%;
+  left: 8.5%;
+  width: 29.2%;
+}
+
+.bg-game-song .hud-streak {
+  top: 28.1%;
+}
+
+.bg-game-song .hud-score {
+  top: 28.1%;
+}
+
+.bg-game-song .hud-timer-value {
+  top: 40.2%;
+  left: 72.8%;
+  width: 11.7%;
+  height: 6.9%;
+  border: 2px solid #eeddbb;
+  border-radius: 50%;
+  background-color: rgba(43, 15, 26, 0.85);
+  box-shadow: 0 0 10px rgba(238, 221, 187, 0.8);
+}
+
+.bg-game-song .hotspot-play-clip {
+  top: 54.7%;
+  left: 33.85%;
+  width: 32.3%;
+  height: 19.1%;
+}
+
+.bg-game-song .hotspot-bottom-left {
+  top: 88.4%;
+  left: 5.3%;
+  width: 35.9%;
+  height: 6.3%;
+}
+
+.bg-game-song .hotspot-bottom-right {
+  top: 88.4%;
+  left: 58.8%;
+  width: 35.9%;
+  height: 6.3%;
+}
+
+/* Reveal Screen Show Details Overlay (When & Where) */
+.reveal-show-details {
+  position: absolute;
+  top: 29.5%;
+  left: 11.5%;
+  width: 77%;
+  height: 25.5%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: rgba(43, 15, 26, 0.85); /* deep dark crimson red card matching sunset */
+  border: 1.5px solid #eeddbb; /* antique gold border */
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  text-align: center;
+  color: #eeddbb;
+}
+
+.reveal-show-details-title {
+  font-family: 'Outfit', 'Georgia', serif;
+  font-size: 0.55rem;
+  color: #eeddbb;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 1px;
+  border-bottom: 1.5px solid rgba(238, 221, 187, 0.4);
+  padding-bottom: 2px;
+  margin-bottom: 6px;
+  width: 80%;
+}
+
+.reveal-show-date {
+  font-family: 'Outfit', 'Georgia', serif;
+  font-weight: 900;
+  font-size: 1.05rem;
+  color: #eeddbb;
+  margin-bottom: 2px;
+  text-shadow: 1px 1px 2px #000;
+}
+
+.reveal-show-venue {
+  font-family: 'Georgia', serif;
+  font-weight: bold;
+  font-size: 0.65rem;
+  color: #eeddbb;
+  opacity: 0.95;
+  margin-bottom: 1px;
+}
+
+.reveal-show-location {
+  font-family: 'Georgia', serif;
+  font-style: italic;
+  font-size: 0.62rem;
+  color: #eeddbb;
+  opacity: 0.85;
+}
+
+.reveal-song-sentence {
+  font-family: 'Georgia', serif;
+  font-size: 0.76rem;
+  line-height: 1.55;
+  color: var(--espresso);
+  font-weight: bold;
+  text-align: center;
+  padding: 0 0.4rem;
+}
