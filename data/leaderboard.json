@@ -52,9 +52,33 @@
     },
     {
       "name": "DAN",
+      "score": 2128,
+      "difficulty": "expert",
+      "date": "2026-08-30"
+    },
+    {
+      "name": "DAN",
       "score": 1668,
       "difficulty": "expert",
       "date": "2026-08-28"
+    },
+    {
+      "name": "DAN",
+      "score": 572,
+      "difficulty": "medium",
+      "date": "2026-08-30"
+    },
+    {
+      "name": "DAN",
+      "score": 476,
+      "difficulty": "easy",
+      "date": "2026-08-30"
+    },
+    {
+      "name": "DAN",
+      "score": 300,
+      "difficulty": "easy",
+      "date": "2026-08-30"
     }
   ]
 }
