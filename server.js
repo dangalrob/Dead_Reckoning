@@ -14,6 +14,21 @@ app.use(express.json());
 // Serve static files from React build directory in production
 app.use(express.static(path.join(__dirname, 'dist')));
 
+// DIAGNOSTICS: Check if dist folder exists at startup
+try {
+  const distPath = path.join(__dirname, 'dist');
+  console.log("DIAGNOSTICS - Checking dist folder at:", distPath);
+  if (fs.existsSync(distPath)) {
+    console.log("DIAGNOSTICS - dist folder exists!");
+    console.log("DIAGNOSTICS - Files in dist:", fs.readdirSync(distPath));
+  } else {
+    console.log("DIAGNOSTICS - dist folder DOES NOT EXIST!");
+    console.log("DIAGNOSTICS - Files in root directory:", fs.readdirSync(__dirname));
+  }
+} catch (err) {
+  console.error("DIAGNOSTICS - Failed to run directories diagnostics:", err);
+}
+
 // Simple in-memory database to store active game answers securely
 const activeGames = {};
 
