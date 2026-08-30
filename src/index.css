@@ -467,13 +467,13 @@ body {
 /* Leaderboard Overlay Coordinates */
 .overlay-game-title {
   position: absolute;
-  top: 31%;
+  top: 36.8%;
   left: 10%;
   width: 80%;
   text-align: center;
   font-family: 'Sancreek', serif;
-  font-size: 1.05rem;
-  color: #3e2723; /* Same color as LEADERBOARD banner text */
+  font-size: 0.88rem;
+  color: var(--espresso);
   text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.4);
   z-index: 10;
   text-transform: uppercase;
@@ -481,10 +481,10 @@ body {
 
 .leaderboard-table-overlay {
   position: absolute;
-  top: 36.5%;
+  top: 41.5%;
   left: 12.5%;
   right: 12.5%;
-  height: 52%;
+  height: 38.5%;
   background: transparent;
   display: flex;
   flex-direction: column;
@@ -544,22 +544,21 @@ body {
 
 .hotspot-leaderboard-back {
   position: absolute;
-  top: 91.5%;
-  left: 15%;
-  width: 70%;
-  height: 5.5%;
+  top: 90.4%;
+  left: 17%;
+  width: 66%;
+  height: 6.5%;
   background: transparent;
-  border: 2px solid rgba(238, 221, 187, 0.25);
+  border: none;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 12px;
   transition: all 0.2s ease-in-out;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+  box-shadow: none;
 }
 
 .hotspot-leaderboard-back:hover {
-  border-color: rgba(238, 221, 187, 0.95);
-  background-color: rgba(238, 221, 187, 0.2);
-  box-shadow: 0 0 10px rgba(238, 221, 187, 0.6);
+  transform: scale(1.03);
+  background-color: rgba(238, 221, 187, 0.08); /* soft golden hover glow inside the button */
 }
 
 /* Reveal Screen HUD Coordinates */
