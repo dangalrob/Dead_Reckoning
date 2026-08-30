@@ -76,6 +76,7 @@ body {
 .bg-game-song { background-image: url('/tour_game_song_bg.png'); }
 .bg-leaderboard { background-image: url('/tour_leaderboard_bg.png'); }
 .bg-reveal { background-image: url('/tour_reveal_bg_cleaned_v2.png'); }
+.bg-reveal.wrong { background-image: url('/tour_reveal_wrong_bg.png'); }
 .bg-loading { background-image: url('/tour_loading_bg.png'); }
 
 /* Absolute Hotspots & Interactives */
@@ -977,4 +978,15 @@ body {
   0% { opacity: 0.45; }
   50% { opacity: 0.95; }
   100% { opacity: 0.45; }
+}
+
+/* Wrong Reveal Screen Layout Overrides (due to sad bears taking space) */
+.bg-reveal.wrong .reveal-cardboard-details.reveal-did-you-know {
+  top: 53.0%;
+  height: 26.3%;
+}
+
+.bg-reveal.wrong .hotspot-reveal-action {
+  top: 85.5%;
+  height: 6.0%;
 }

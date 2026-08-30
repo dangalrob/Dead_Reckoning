@@ -582,16 +582,14 @@ export default function App() {
 
       {/* Screen 3: Guess Reveal / Game Over Screen */}
       {screen === 'reveal' && guessResult && (
-        <div className="game-card bg-reveal">
+        <div className={`game-card bg-reveal ${!guessResult.correct ? 'wrong' : ''}`}>
           {lives > 0 ? (
             // --- Normal Round Reveal ---
             <>
               {/* Correct Banner Overlay (Scroll) */}
               <div className="reveal-banner-container">
-                {guessResult.correct ? (
+                {guessResult.correct && (
                   <span className="reveal-banner-success">RIGHT ON!</span>
-                ) : (
-                  <span className="reveal-banner-fail">MISSED!</span>
                 )}
               </div>
 
@@ -648,9 +646,7 @@ export default function App() {
             // --- Game Over Screen (Strikes Out) ---
             <>
               {/* Game Over Banner Overlay (Scroll) */}
-              <div className="reveal-banner-container">
-                <span className="reveal-banner-fail">GAME OVER!</span>
-              </div>
+              <div className="reveal-banner-container"></div>
 
               {/* Single Central Parchment Content Card (Game Over Mode) */}
               <div className="reveal-cardboard-details reveal-did-you-know" style={{ justifyContent: 'center' }}>
