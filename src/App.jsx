@@ -143,6 +143,7 @@ export default function App() {
   const [activeLeaderboardType, setActiveLeaderboardType] = useState('decade');
   const [playerInitials, setPlayerInitials] = useState('');
   const [scoreSaved, setScoreSaved] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const audioRef = useRef(null);
   const timerIntervalRef = useRef(null);
@@ -336,14 +337,28 @@ export default function App() {
     return "easy"; // JKD
   };
 
+  // Clear leaderboard reset action
+  const clearLeaderboards = async () => {
+    setMenuOpen(false);
+    if (!window.confirm("Are you sure you want to completely clear the leaderboards? This cannot be undone.")) return;
+    try {
+      const res = await axios.post('/api/leaderboard/clear');
+      setLeaderboard(res.data);
+      alert("Leaderboards successfully cleared!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to clear leaderboards.");
+    }
+  };
+
   // Submit high score initials
   const submitHighScore = async (e) => {
     e.preventDefault();
-    if (playerInitials.length !== 3) return;
+    if (!playerInitials.trim() || playerInitials.length > 10) return;
 
     try {
       await axios.post('/api/game/leaderboard', {
-        name: playerInitials,
+        name: playerInitials.trim(),
         score,
         difficulty: getDifficultyRating(score),
         gameType
@@ -447,6 +462,22 @@ export default function App() {
       {/* Screen 1: Main Menu */}
       {screen === 'login' && (
         <div className="game-card bg-menu">
+          {/* Hamburger Menu Container */}
+          <div className="menu-hamburger-container">
+            <button className="menu-hamburger-btn" onClick={() => setMenuOpen(!menuOpen)}>
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+              </svg>
+            </button>
+            {menuOpen && (
+              <div className="menu-hamburger-dropdown">
+                <button className="menu-dropdown-item" onClick={clearLeaderboards}>
+                  Clear Leaderboard ⚡
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Dynamic title scroll text */}
           <div className="menu-scroll-title">
             <div>LIVE GRATEFUL DEAD</div>
@@ -662,12 +693,12 @@ export default function App() {
                 {!scoreSaved && score > 0 ? (
                   // Initials submission form positioned inside did-you-know placard
                   <form onSubmit={submitHighScore} className="gameover-form-overlay">
-                    <span className="reveal-detail-label" style={{ marginBottom: '3px' }}>ENTER INITIALS:</span>
+                    <span className="reveal-detail-label" style={{ marginBottom: '3px' }}>ENTER NAME:</span>
                     <input 
                       type="text" 
-                      maxLength="3"
+                      maxLength="10"
                       className="gameover-initials-input"
-                      placeholder="DAN"
+                      placeholder="YOUR NAME"
                       value={playerInitials}
                       onChange={e => setPlayerInitials(e.target.value.toUpperCase())}
                       required

@@ -419,6 +419,17 @@ app.get('/api/game/leaderboard', (req, res) => {
   }
 });
 
+// Endpoint: Clear leaderboard data
+app.post('/api/leaderboard/clear', (req, res) => {
+  try {
+    const emptyScores = { decade: [], song: [] };
+    fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(emptyScores, null, 2), 'utf8');
+    res.json(emptyScores);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to reset leaderboard." });
+  }
+});
+
 // Endpoint: Submit high score
 app.post('/api/game/leaderboard', (req, res) => {
   const { name, score, difficulty, gameType } = req.body;
@@ -434,7 +445,7 @@ app.post('/api/game/leaderboard', (req, res) => {
     
     // Add new score to the correct game type list
     scores[mode].push({
-      name: name.substring(0, 3).toUpperCase(), // Arcade style: 3 initials
+      name: name.substring(0, 10).toUpperCase(), // Supported up to 10 characters
       score,
       difficulty: difficulty || 'medium',
       date: new Date().toISOString().split('T')[0]
