@@ -895,3 +895,77 @@ body {
   text-align: center;
   padding: 0 0.4rem;
 }
+
+/* Play/Pause SVGs Inside Circular Stealie Stamp */
+.play-icon-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  color: rgba(255, 255, 255, 0.42); /* transparent white play icon overlay */
+  pointer-events: none;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hotspot-play-clip:hover .play-icon-overlay {
+  color: rgba(255, 255, 255, 0.95);
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+.play-icon-overlay svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(1.5px 1.5px 1.5px rgba(0, 0, 0, 0.75));
+}
+
+.play-icon-overlay.pulsate {
+  animation: playIconPulsate 1.8s infinite ease-in-out;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+@keyframes playIconPulsate {
+  0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.4; }
+  50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.9; }
+  100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.4; }
+}
+
+/* Disabled Choice Buttons Until Clip Is Listened To */
+.song-choice-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed !important;
+  pointer-events: none;
+  filter: grayscale(40%);
+}
+
+.hotspot-game-btn:disabled {
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+
+/* Float Prompt under scoreboard to alert the player */
+.play-prompt {
+  position: absolute;
+  left: 5%;
+  width: 90%;
+  text-align: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 0.52rem;
+  color: #eeddbb;
+  letter-spacing: 0.8px;
+  text-shadow: 1.5px 1.5px 2px #000;
+  animation: promptPulsate 1.8s infinite ease-in-out;
+  z-index: 5;
+  pointer-events: none;
+}
+
+@keyframes promptPulsate {
+  0% { opacity: 0.45; }
+  50% { opacity: 0.95; }
+  100% { opacity: 0.45; }
+}

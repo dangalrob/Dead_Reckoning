@@ -132,6 +132,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [question, setQuestion] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
   const [totalTimeLimit, setTotalTimeLimit] = useState(15);
   
@@ -166,6 +167,7 @@ export default function App() {
     setLoading(true);
     setGuessResult(null);
     setIsPlaying(false);
+    setHasPlayedOnce(false);
     setLastSpeedBonus(0);
     setLastPointsEarned(0);
     
@@ -239,6 +241,7 @@ export default function App() {
       clearInterval(timerIntervalRef.current);
     } else {
       setIsPlaying(true);
+      setHasPlayedOnce(true);
       try {
         if (audioRef.current.currentTime < question.startOffset) {
           audioRef.current.currentTime = question.startOffset;
@@ -529,7 +532,26 @@ export default function App() {
           <button 
             className={`hotspot-play-clip ${isPlaying ? 'playing' : ''}`}
             onClick={togglePlay}
-          ></button>
+          >
+            <div className={`play-icon-overlay ${!hasPlayedOnce ? 'pulsate' : ''}`}>
+              {isPlaying ? (
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              )}
+            </div>
+          </button>
+
+          {/* Prompt to Tap Play if not played yet */}
+          {!hasPlayedOnce && (
+            <div className="play-prompt" style={{ top: gameType === 'song' ? '54.5%' : '47.5%' }}>
+              ⚡ TAP STEALIE TO UNLOCK CHOICES ⚡
+            </div>
+          )}
 
           {/* TIMER HUD Overlay */}
           <div className="hud-timer-value">{timeLeft}</div>
@@ -543,6 +565,7 @@ export default function App() {
                   key={idx}
                   className="song-choice-btn" 
                   onClick={() => submitGuess(choice)}
+                  disabled={!hasPlayedOnce}
                 >
                   {choice}
                 </button>
@@ -551,11 +574,11 @@ export default function App() {
           ) : (
             // --- Name the Decade: Transparent hotspots mapping to printed decade buttons ---
             <div className="game-decade-grid">
-              <button className="hotspot-game-btn hotspot-btn-60s" onClick={() => submitGuess('60s')}></button>
+              <button className="hotspot-game-btn hotspot-btn-60s" onClick={() => submitGuess('60s')} disabled={!hasPlayedOnce}></button>
               <button className="hotspot-game-btn" onClick={() => submitGuess('77s')} style={{ display: 'none' }}></button> {/* compatibility fallback */}
-              <button className="hotspot-game-btn hotspot-btn-70s" onClick={() => submitGuess('70s')}></button>
-              <button className="hotspot-game-btn hotspot-btn-80s" onClick={() => submitGuess('80s')}></button>
-              <button className="hotspot-game-btn hotspot-btn-90s" onClick={() => submitGuess('90s')}></button>
+              <button className="hotspot-game-btn hotspot-btn-70s" onClick={() => submitGuess('70s')} disabled={!hasPlayedOnce}></button>
+              <button className="hotspot-game-btn hotspot-btn-80s" onClick={() => submitGuess('80s')} disabled={!hasPlayedOnce}></button>
+              <button className="hotspot-game-btn hotspot-btn-90s" onClick={() => submitGuess('90s')} disabled={!hasPlayedOnce}></button>
             </div>
           )}
 
