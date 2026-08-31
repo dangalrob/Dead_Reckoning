@@ -139,6 +139,7 @@ export default function App() {
   const [guessResult, setGuessResult] = useState(null);
   const [lastPointsEarned, setLastPointsEarned] = useState(0);
   const [lastSpeedBonus, setLastSpeedBonus] = useState(0);
+  const [lastStreakBonus, setLastStreakBonus] = useState(0);
   const [leaderboard, setLeaderboard] = useState({ decade: [], song: [] });
   const [activeLeaderboardType, setActiveLeaderboardType] = useState('decade');
   const [playerInitials, setPlayerInitials] = useState('');
@@ -170,6 +171,7 @@ export default function App() {
     setIsPlaying(false);
     setHasPlayedOnce(false);
     setLastSpeedBonus(0);
+    setLastStreakBonus(0);
     setLastPointsEarned(0);
     
     const limit = getDifficultyTime();
@@ -306,6 +308,7 @@ export default function App() {
 
         setLastPointsEarned(earned);
         setLastSpeedBonus(speedBonus);
+        setLastStreakBonus(streakBonus);
         setScore(prev => prev + earned);
         setStreak(prev => prev + 1);
         setCorrectCount(prev => prev + 1);
@@ -356,7 +359,7 @@ export default function App() {
 
   // Submit high score initials
   const submitHighScore = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     if (!playerInitials.trim() || playerInitials.length > 10) return;
 
     try {
@@ -524,7 +527,7 @@ export default function App() {
           <button 
             className="hotspot-rules" 
             onClick={() => {
-              alert("Grateful Dead Tour Rules:\n\n1. Play a clip (15s limit).\n2. Guess the decade or the song correctly.\n3. Make quick guesses to gain speed bonuses!\n4. Run out of time or guess wrong and you lose 1 of your 3 lives.\n5. Score enough to rise through ranks: Jerry's Kids -> Estimated Prophet -> Taper!");
+              setScreen('rules');
             }}
           >
             Tour Rules & Ranks
@@ -546,15 +549,18 @@ export default function App() {
           <div className="hud-streak">{streak}</div>
           <div className="hud-score">{score}</div>
 
-          {/* Track name / Identifier Label (Decade mode only) */}
-          {gameType === 'decade' && (
-            <div className="hud-title-container">
-              <span className="stat-label" style={{ color: '#eeddbb', fontSize: '0.55rem', marginBottom: '1px' }}>NOW IDENTIFYING TRACK:</span>
-              <span className="hud-track-name">
-                "{question.trackName.toUpperCase()}"
-              </span>
-            </div>
-          )}
+          {/* Track name / Identifier Label */}
+          <div className="hud-title-container">
+            <span className="hud-song-counter">SONG {totalCount + 1} OF 10</span>
+            {gameType === 'decade' && (
+              <>
+                <span className="stat-label" style={{ color: '#eeddbb', fontSize: '0.52rem', marginBottom: '1px', marginTop: '2px' }}>NOW IDENTIFYING TRACK:</span>
+                <span className="hud-track-name">
+                  "{question.trackName.toUpperCase()}"
+                </span>
+              </>
+            )}
+          </div>
 
           {/* PLAY CLIP Circular Stamp Overlay Button */}
           <button 
@@ -615,131 +621,172 @@ export default function App() {
         </div>
       )}
 
-      {/* Screen 3: Guess Reveal / Game Over Screen */}
+      {/* Screen 3: Guess Reveal Screen */}
       {screen === 'reveal' && guessResult && (
         <div className={`game-card bg-reveal ${!guessResult.correct ? 'wrong' : ''}`}>
-          {lives > 0 && totalCount < 10 ? (
-            // --- Normal Round Reveal ---
-            <>
-              {/* Correct Banner Overlay (Scroll) */}
-              <div className="reveal-banner-container">
-                {guessResult.correct && (
-                  <span className="reveal-banner-success">RIGHT ON!</span>
-                )}
+          {/* Correct Banner Overlay (Scroll) */}
+          <div className="reveal-banner-container">
+            {guessResult.correct && (
+              <span className="reveal-banner-success">RIGHT ON!</span>
+            )}
+          </div>
+
+          {/* Single Central Parchment Content Card */}
+          <div className="reveal-cardboard-details reveal-did-you-know">
+            {gameType === 'song' ? (
+              // --- Name the Song: Simple descriptive sentence with bold key details ---
+              <div className="reveal-song-sentence">
+                <strong>"{guessResult.correctSong}"</strong> was played on <strong>{(() => {
+                  if (!guessResult.showDetails || !guessResult.showDetails.date) return 'an unknown date';
+                  const parts = guessResult.showDetails.date.split('-');
+                  if (parts.length !== 3) return guessResult.showDetails.date;
+                  const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+                  return dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                })()}</strong> in the <strong>{guessResult.showDetails ? guessResult.showDetails.venue : 'unknown venue'}</strong> in <strong>{guessResult.showDetails ? guessResult.showDetails.location : 'unknown location'}</strong>.
               </div>
-
-              {/* Single Central Parchment Content Card */}
-              <div className="reveal-cardboard-details reveal-did-you-know">
-                {gameType === 'song' ? (
-                  // --- Name the Song: Simple descriptive sentence as requested ---
-                  <div className="reveal-song-sentence">
-                    "{guessResult.correctSong}" was played on {(() => {
-                      if (!guessResult.showDetails || !guessResult.showDetails.date) return 'an unknown date';
-                      const parts = guessResult.showDetails.date.split('-');
-                      if (parts.length !== 3) return guessResult.showDetails.date;
-                      const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
-                      return dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                    })()} in the {guessResult.showDetails ? guessResult.showDetails.venue : 'unknown venue'} in {guessResult.showDetails ? guessResult.showDetails.location : 'unknown location'}.
-                  </div>
-                ) : (
-                  // --- Name the Decade: Split track and live details layout ---
-                  <>
-                    {/* 1. Track Played Info */}
-                    <div className="reveal-card-track-info">
-                      "{guessResult.correctSong || question.trackName}"
-                      <div style={{ marginTop: '2px' }}>WAS PLAYED IN THE <span className="reveal-decade-badge">{getFullDecade(guessResult.correctDecade)}</span></div>
-                    </div>
-
-                    <div className="reveal-divider"></div>
-
-                    {/* 2. Show Recording Details (When & Where) */}
-                    {guessResult.showDetails && (
-                      <div className="reveal-card-show-details">
-                        <div className="show-date">
-                          {(() => {
-                            if (!guessResult.showDetails.date) return 'Unknown Date';
-                            const parts = guessResult.showDetails.date.split('-');
-                            if (parts.length !== 3) return guessResult.showDetails.date;
-                            const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
-                            return dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                          })()}
-                        </div>
-                        <div>{guessResult.showDetails.venue}</div>
-                        <div>{guessResult.showDetails.location}</div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-
-              {/* Action Hotspot Button (NEXT ROUND) */}
-              <button className="hotspot-reveal-action" onClick={() => loadQuestion(gameType)}>
-                Next Round
-              </button>
-            </>
-          ) : (
-            // --- Game Over Screen (Strikes Out or Victory Complete) ---
-            <>
-              {/* Game Over Banner Overlay (Scroll) */}
-              <div className="reveal-banner-container">
-                {lives > 0 && guessResult.correct && (
-                  <span className="reveal-banner-success">VICTORY!</span>
-                )}
-              </div>
-
-              {/* Single Central Parchment Content Card (Game Over Mode) */}
-              <div className="reveal-cardboard-details reveal-did-you-know" style={{ justifyContent: 'center' }}>
-                <div className="reveal-card-track-info" style={{ marginBottom: '8px' }}>
-                  {lives === 0 ? (
-                    <>
-                      {gameType === 'song' ? `CORRECT SONG:` : `CORRECT DECADE:`}
-                      <div style={{ color: 'var(--crimson)', marginTop: '2px' }}>
-                        {gameType === 'song' ? `"${guessResult.correctSong.toUpperCase()}"` : getFullDecade(guessResult.correctDecade)}
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div style={{ color: 'var(--espresso)', textShadow: '1px 1px 0px rgba(255,255,255,0.4)', fontSize: '1.05rem', fontFamily: 'Sancreek, serif' }}>⚡ VICTORY! ⚡</div>
-                      <div style={{ color: 'var(--crimson)', marginTop: '2px', fontSize: '0.78rem' }}>
-                        COMPLETED 10 ROUNDS!
-                      </div>
-                    </>
-                  )}
+            ) : (
+              // --- Name the Decade: Split track and live details layout ---
+              <>
+                {/* 1. Track Played Info */}
+                <div className="reveal-card-track-info">
+                  "{guessResult.correctSong || question.trackName}"
+                  <div style={{ marginTop: '2px' }}>WAS PLAYED IN THE <span className="reveal-decade-badge">{getFullDecade(guessResult.correctDecade)}</span></div>
                 </div>
 
                 <div className="reveal-divider"></div>
 
-                {!scoreSaved && score > 0 ? (
-                  // Initials submission form positioned inside did-you-know placard
-                  <form onSubmit={submitHighScore} className="gameover-form-overlay">
-                    <span className="reveal-detail-label" style={{ marginBottom: '3px' }}>ENTER NAME:</span>
-                    <input 
-                      type="text" 
-                      maxLength="10"
-                      className="gameover-initials-input"
-                      placeholder="YOUR NAME"
-                      value={playerInitials}
-                      onChange={e => setPlayerInitials(e.target.value.toUpperCase())}
-                      required
-                      autoFocus
-                    />
-                    <button type="submit" className="gameover-enter-btn">ENTER ⚡</button>
-                  </form>
-                ) : (
-                  <div className="reveal-card-show-details" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
-                    <span className="reveal-detail-label">FINAL SCORE</span>
-                    <span style={{ fontSize: '1.45rem', fontWeight: 'bold', color: 'var(--crimson)', fontFamily: 'Georgia, serif', textShadow: '1px 1px 0px rgba(0,0,0,0.1)' }}>{score}</span>
-                    <span className="reveal-detail-label" style={{ marginTop: '2px' }}>RANK: {getScoreTier(score)}</span>
+                {/* 2. Show Recording Details (When & Where) */}
+                {guessResult.showDetails && (
+                  <div className="reveal-card-show-details">
+                    <div className="show-date">
+                      {(() => {
+                        if (!guessResult.showDetails.date) return 'Unknown Date';
+                        const parts = guessResult.showDetails.date.split('-');
+                        if (parts.length !== 3) return guessResult.showDetails.date;
+                        const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+                        return dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                      })()}
+                    </div>
+                    <div>{guessResult.showDetails.venue}</div>
+                    <div>{guessResult.showDetails.location}</div>
                   </div>
                 )}
-              </div>
+              </>
+            )}
 
-              {/* Action Hotspot Button (MAIN MENU) */}
-              <button className="hotspot-reveal-action" onClick={returnToMainMenu}>
-                Main Menu
-              </button>
-            </>
+            <div className="reveal-divider"></div>
+
+            {/* Detailed Points Gained/Lost Feedback */}
+            <div className="reveal-points-feedback">
+              {guessResult.correct ? (
+                <span className="points-positive">
+                  +100 PTS BASE {lastStreakBonus > 0 && `+${lastStreakBonus} STREAK`} {lastSpeedBonus > 0 && `+${lastSpeedBonus} SPEED`}
+                </span>
+              ) : (
+                <span className="points-negative">
+                  -50 PTS PENALTY
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Action Hotspot Button (NEXT ROUND or VIEW RESULTS) */}
+          {lives === 0 || totalCount >= 10 ? (
+            <button className="hotspot-reveal-action" onClick={() => setScreen('gameover')}>
+              See Results
+            </button>
+          ) : (
+            <button className="hotspot-reveal-action" onClick={() => loadQuestion(gameType)}>
+              Next Round
+            </button>
           )}
+        </div>
+      )}
+
+      {/* Screen: Tour Rules */}
+      {screen === 'rules' && (
+        <div className="game-card bg-rules">
+          <div className="rules-content-card">
+            <div className="rules-title">TOUR RULES</div>
+            <div className="rules-section">
+              <div className="rules-item">1. TAP THE STEALIE TO PLAY THE LIVE AUDIO CLIP (10S LIMIT).</div>
+              <div className="rules-item">2. CHOOSE THE CORRECT SONG NAME FROM THE 4 OPTIONS.</div>
+              <div className="rules-item">3. GUESS QUICKLY TO EARN UP TO +40 SPEED BONUS POINTS.</div>
+              <div className="rules-item">4. WRONG GUESSES DEDUCT A 50 POINT PENALTY AND RESET STREAK.</div>
+              <div className="rules-item">5. COMPLETE 10 SONGS WITH LIVES REMAINING TO CONQUER THE TOUR!</div>
+            </div>
+            
+            <div className="ranks-title">TOUR RANKS</div>
+            <div className="ranks-section">
+              <div className="ranks-item">⭐ TAPER (1500+ PTS)</div>
+              <div className="ranks-item">⭐ ESTIMATED PROPHET (500-1499 PTS)</div>
+              <div className="ranks-item">⭐ JERRY'S KIDS (0-499 PTS)</div>
+            </div>
+          </div>
+          <button className="hotspot-rules-back" onClick={returnToMainMenu}></button>
+        </div>
+      )}
+
+      {/* Screen: Game Over / Tour Complete */}
+      {screen === 'gameover' && (
+        <div className="game-card bg-gameover">
+          <div className="gameover-dark-card">
+            <div className="gameover-status-title">
+              {lives === 0 ? "TOUR STRIKE OUT" : "TOUR COMPLETE"}
+            </div>
+            
+            <div className="gameover-results-breakdown">
+              {lives === 0 && guessResult && (
+                <div className="gameover-reveal-correct">
+                  <div className="gameover-reveal-label">CORRECT SONG:</div>
+                  <div className="gameover-reveal-val">"{guessResult.correctSong.toUpperCase()}"</div>
+                </div>
+              )}
+              
+              <div className="gameover-stat-row">
+                <span className="gameover-stat-label">FINAL SCORE:</span>
+                <span className="gameover-stat-val">{score}</span>
+              </div>
+              <div className="gameover-stat-row">
+                <span className="gameover-stat-label">TOUR RANK:</span>
+                <span className="gameover-stat-val-rank">{getScoreTier(score)}</span>
+              </div>
+              <div className="gameover-stat-row" style={{ borderBottom: 'none' }}>
+                <span className="gameover-stat-label">SONGS PLAYED:</span>
+                <span className="gameover-stat-val">{totalCount} OF 10</span>
+              </div>
+            </div>
+
+            {!scoreSaved && score > 0 ? (
+              <div className="gameover-name-entry">
+                <div className="gameover-entry-label">ENTER NAME FOR LEADERBOARD:</div>
+                <input 
+                  type="text" 
+                  maxLength="10"
+                  className="gameover-name-input"
+                  placeholder="YOUR NAME"
+                  value={playerInitials}
+                  onChange={e => setPlayerInitials(e.target.value.toUpperCase())}
+                  required
+                  autoFocus
+                />
+              </div>
+            ) : (
+              <div className="gameover-saved-msg">
+                {scoreSaved ? "✓ SCORE SAVED TO LEADERBOARD!" : "SCORE IS ZERO - PLAY AGAIN!"}
+              </div>
+            )}
+          </div>
+
+          {/* Action buttons mapping to bottom red and blue boxes */}
+          {!scoreSaved && score > 0 ? (
+            <button className="hotspot-gameover-submit" onClick={submitHighScore}>
+              SUBMIT SCORE
+            </button>
+          ) : null}
+          <button className="hotspot-gameover-menu" onClick={returnToMainMenu}>
+            MAIN MENU
+          </button>
         </div>
       )}
 

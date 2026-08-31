@@ -78,6 +78,8 @@ body {
 .bg-reveal { background-image: url('/tour_reveal_bg_cleaned_v2.png'); }
 .bg-reveal.wrong { background-image: url('/tour_reveal_wrong_bg.png'); }
 .bg-loading { background-image: url('/tour_loading_bg.png'); }
+.bg-rules { background-image: url('/tour_rules_bg.png'); }
+.bg-gameover { background-image: url('/tour_gameover_bg.png'); }
 
 /* Absolute Hotspots & Interactives */
 
@@ -271,6 +273,15 @@ body {
   text-align: center;
   letter-spacing: 0.5px;
   margin-top: 2px;
+}
+
+.hud-song-counter {
+  font-family: 'Sancreek', 'Georgia', serif;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  color: #eeddbb;
+  text-shadow: 2px 2px 3px rgba(0,0,0,0.9);
+  letter-spacing: 1.5px;
 }
 
 /* Circular play clip stamp overlay */
@@ -897,12 +908,33 @@ body {
 
 .reveal-song-sentence {
   font-family: 'Georgia', serif;
-  font-size: 0.76rem;
-  line-height: 1.55;
+  font-size: 0.94rem;
+  line-height: 1.6;
   color: var(--espresso);
-  font-weight: bold;
   text-align: center;
   padding: 0 0.4rem;
+}
+
+.reveal-points-feedback {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 0.76rem;
+  letter-spacing: 0.5px;
+  margin-top: 5px;
+  text-align: center;
+}
+
+.points-positive {
+  color: #2e7d32; /* matching dark green for success on parchment */
+  text-shadow: 0.5px 0.5px 0px rgba(255, 255, 255, 0.4);
+}
+
+.points-negative {
+  color: #c62828; /* matching dark crimson for penalty on parchment */
+  text-shadow: 0.5px 0.5px 0px rgba(255, 255, 255, 0.4);
 }
 
 /* Play/Pause SVGs Inside Circular Stealie Stamp */
@@ -1067,6 +1099,267 @@ body {
   text-shadow: 0 0 6px rgba(238, 221, 187, 0.8);
 }
 
+/* Rules Screen Layout */
+.rules-content-card {
+  position: absolute;
+  top: 31.0%;
+  left: 10.0%;
+  width: 80.0%;
+  height: 56.0%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 0.6rem 0.5rem;
+  overflow-y: auto;
+  gap: 0.4rem;
+}
+
+/* Scrollbar styling for rules parchment card */
+.rules-content-card::-webkit-scrollbar {
+  width: 3px;
+}
+.rules-content-card::-webkit-scrollbar-thumb {
+  background: var(--espresso);
+  border-radius: 4px;
+}
+
+.rules-title, .ranks-title {
+  font-family: 'Sancreek', serif;
+  font-size: 0.95rem;
+  color: var(--espresso);
+  text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.4);
+  text-align: center;
+  border-bottom: 2px solid rgba(43, 15, 26, 0.15);
+  padding-bottom: 2px;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+}
+
+.rules-section, .ranks-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.rules-item, .ranks-item {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 0.54rem;
+  line-height: 1.35;
+  color: var(--espresso);
+  text-align: left;
+}
+
+.ranks-item {
+  text-align: center;
+  font-size: 0.62rem;
+}
+
+/* Rules back button hotspot (centered over bottom blue box) */
+.hotspot-rules-back {
+  position: absolute;
+  top: 90.4%;
+  left: 24.0%;
+  width: 52.0%;
+  height: 6.7%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 15;
+  outline: none;
+  transition: transform 0.15s ease-in-out;
+}
+
+.hotspot-rules-back:active {
+  transform: scale(0.96);
+}
+
+/* Game Over Screen Layout */
+.gameover-dark-card {
+  position: absolute;
+  top: 36.6%;
+  left: 10.0%;
+  width: 80.0%;
+  height: 38.5%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 0.6rem 0.5rem;
+  gap: 0.45rem;
+  overflow-y: auto;
+  align-items: center;
+}
+
+/* Scrollbar styling for gameover card */
+.gameover-dark-card::-webkit-scrollbar {
+  width: 3px;
+}
+.gameover-dark-card::-webkit-scrollbar-thumb {
+  background: rgba(238, 221, 187, 0.25);
+  border-radius: 4px;
+}
+
+.gameover-status-title {
+  font-family: 'Sancreek', serif;
+  font-size: 0.88rem;
+  color: #eeddbb;
+  text-shadow: 2px 2px 3px #000;
+  text-align: center;
+  margin-bottom: 2px;
+  width: 100%;
+}
+
+.gameover-results-breakdown {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.gameover-reveal-correct {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border-bottom: 1px solid rgba(238, 221, 187, 0.15);
+  padding-bottom: 3px;
+  margin-bottom: 2px;
+}
+
+.gameover-reveal-label {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 0.52rem;
+  color: #eeddbb;
+  opacity: 0.85;
+}
+
+.gameover-reveal-val {
+  font-family: 'Georgia', serif;
+  font-weight: bold;
+  font-size: 0.72rem;
+  color: var(--crimson);
+  text-shadow: 1px 1px 2px #000;
+  margin-top: 1px;
+}
+
+.gameover-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(238, 221, 187, 0.15);
+  padding: 3px 2px;
+}
+
+.gameover-stat-label {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 0.54rem;
+  color: #eeddbb;
+  opacity: 0.85;
+}
+
+.gameover-stat-val {
+  font-family: 'Georgia', serif;
+  font-weight: bold;
+  font-size: 0.72rem;
+  color: #eeddbb;
+}
+
+.gameover-stat-val-rank {
+  font-family: 'Georgia', serif;
+  font-weight: bold;
+  font-size: 0.72rem;
+  color: var(--crimson);
+  text-shadow: 1px 1px 1px #000;
+}
+
+.gameover-name-entry {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  margin-top: 3px;
+}
+
+.gameover-entry-label {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 0.52rem;
+  color: #eeddbb;
+  text-align: center;
+}
+
+.gameover-name-input {
+  width: 78%;
+  background: rgba(11, 2, 6, 0.85);
+  border: 2px solid #c29b53;
+  color: #fff;
+  font-family: 'Outfit', 'Georgia', serif;
+  font-weight: 800;
+  font-size: 0.82rem;
+  text-align: center;
+  padding: 0.28rem;
+  border-radius: 6px;
+  outline: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gameover-name-input:focus {
+  border-color: #fff;
+  box-shadow: 0 0 6px rgba(238, 221, 187, 0.6);
+}
+
+.gameover-saved-msg {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 0.58rem;
+  color: #eeddbb;
+  text-align: center;
+  margin-top: 4px;
+}
+
+/* Action button hotspots */
+.hotspot-gameover-submit, .hotspot-gameover-menu {
+  position: absolute;
+  left: 14.0%;
+  width: 72.0%;
+  height: 7.2%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 15;
+  outline: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Sancreek', serif;
+  font-size: 0.94rem;
+  color: #eeddbb;
+  text-shadow: 2px 2px 3px #000;
+  transition: all 0.15s ease-in-out;
+}
+
+.hotspot-gameover-submit {
+  top: 78.1%;
+}
+
+.hotspot-gameover-menu {
+  top: 87.4%;
+}
+
+.hotspot-gameover-submit:hover, .hotspot-gameover-menu:hover {
+  transform: scale(1.03);
+  color: #fff;
+  text-shadow: 0 0 8px rgba(238, 221, 187, 0.8);
+}
+
+.hotspot-gameover-submit:active, .hotspot-gameover-menu:active {
+  transform: scale(0.96);
+}
+
 /* Mobile Responsive Scaling: utilize viewport space better on iPhones/smaller viewports */
 @media (max-width: 480px) {
   #root {
@@ -1074,8 +1367,8 @@ body {
     overflow: hidden;
   }
   .game-card {
-    /* Scale card to fit screen width (aspect ratio preserved, absolute coords intact!) */
-    transform: scale(min(1.22, calc(100vw / 315)));
+    /* Scale card to fit screen width and height dynamically (aspect ratio preserved!) */
+    transform: scale(min(calc(100vw / 307), calc(100vh / 520)));
     transform-origin: center center;
   }
 }
