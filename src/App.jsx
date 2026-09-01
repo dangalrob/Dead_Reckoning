@@ -153,6 +153,13 @@ export default function App() {
   const [auditFilter, setAuditFilter] = useState('all'); // 'all', 'noname', 'multiname'
   const [loadingAudit, setLoadingAudit] = useState(false);
 
+  // Concert Tour Session states
+  const [sessionId, setSessionId] = useState(null);
+  const [sessionMode, setSessionMode] = useState('daily');
+  const [yearChoices, setYearChoices] = useState([]);
+  const [yearGuessResult, setYearGuessResult] = useState(null);
+  const [postShowData, setPostShowData] = useState(null);
+
   const audioRef = useRef(null);
   const timerIntervalRef = useRef(null);
 
@@ -161,6 +168,88 @@ export default function App() {
     pingUserActivity();
     fetchLeaderboard();
   }, []);
+
+  const startConcertSession = async (mode = 'daily') => {
+    setLoading(true);
+    setScore(0);
+    setStreak(0);
+    setLives(3);
+    setCorrectCount(0);
+    setTotalCount(0);
+    setScoreSaved(false);
+    setYearGuessResult(null);
+    setPostShowData(null);
+    setSessionMode(mode);
+
+    try {
+      const res = await axios.post('/api/game/start-session', { mode, gameType: 'song' });
+      setSessionId(res.data.sessionId);
+      setYearChoices(res.data.yearChoices || []);
+      await loadSessionTrack(res.data.sessionId, 0);
+    } catch (err) {
+      console.error("Error starting concert session:", err);
+      alert("Could not initialize concert session. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  const loadSessionTrack = async (sId = sessionId, trackIdx = totalCount) => {
+    setLoading(true);
+    setGuessResult(null);
+    setIsPlaying(false);
+    setHasPlayedOnce(false);
+
+    try {
+      const res = await axios.get(`/api/game/session-track?sessionId=${sId}&trackIndex=${trackIdx}`);
+      const trackData = res.data;
+      setQuestion({
+        trackName: trackData.correctSong,
+        choices: trackData.choices,
+        audioUrl: trackData.audioUrl,
+        startOffset: trackData.startOffset
+      });
+
+      if (audioRef.current) {
+        audioRef.current.src = trackData.audioUrl;
+        audioRef.current.currentTime = trackData.startOffset;
+      }
+      setScreen('game');
+    } catch (err) {
+      console.error("Error loading session track:", err);
+      alert("Failed to load track from Relisten.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitYearGuess = async (year) => {
+    try {
+      const res = await axios.post('/api/game/guess-year', {
+        sessionId,
+        yearGuess: year
+      });
+      setYearGuessResult(res.data);
+      if (res.data.correct) {
+        setScore(prev => prev + 500);
+      }
+    } catch (err) {
+      console.error("Year guess error:", err);
+    }
+  };
+
+  const loadPostShowReport = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`/api/game/post-show-report?sessionId=${sessionId}`);
+      setPostShowData(res.data);
+      setScreen('post_show');
+    } catch (err) {
+      console.error("Post show report error:", err);
+      setScreen('gameover');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fetch leaderboard statistics
   const fetchLeaderboard = async () => {
@@ -509,25 +598,18 @@ export default function App() {
           {/* Buttons with dynamic text overlays */}
           <button 
             className="hotspot-decade" 
-            disabled
+            onClick={() => startConcertSession('daily')}
           >
-            Name The Decade
-            <span style={{ display: 'block', fontSize: '0.42rem', textTransform: 'uppercase', marginTop: '2px', opacity: 0.75, letterSpacing: '0.5px' }}>Coming Soon</span>
+            🌟 TODAY'S TOUR CONCERT
+            <span style={{ display: 'block', fontSize: '0.40rem', textTransform: 'uppercase', marginTop: '2px', opacity: 0.85, letterSpacing: '0.5px', color: '#ffd54f' }}>DAILY CHALLENGE</span>
           </button>
           
           <button 
             className="hotspot-song" 
-            onClick={() => {
-              setGameType('song');
-              setScore(0);
-              setStreak(0);
-              setLives(3);
-              setCorrectCount(0);
-              setTotalCount(0);
-              loadQuestion('song');
-            }}
+            onClick={() => startConcertSession('archive')}
           >
-            Name The Song
+            🎸 ARCHIVE TOUR CONCERT
+            <span style={{ display: 'block', fontSize: '0.40rem', textTransform: 'uppercase', marginTop: '2px', opacity: 0.85, letterSpacing: '0.5px' }}>RANDOM SHOW MODE</span>
           </button>
           
           <button 
@@ -705,16 +787,115 @@ export default function App() {
             </div>
           </div>
 
-          {/* Action Hotspot Button (NEXT ROUND or VIEW RESULTS) */}
-          {lives === 0 || totalCount >= 10 ? (
+          {/* Action Hotspot Button (NEXT ROUND or GRAND FINALE) */}
+          {lives === 0 ? (
             <button className="hotspot-reveal-action" onClick={() => setScreen('gameover')}>
               See Results
             </button>
+          ) : totalCount >= 10 ? (
+            <button className="hotspot-reveal-action" onClick={() => setScreen('year_bonus')}>
+              Grand Finale ⚡
+            </button>
           ) : (
-            <button className="hotspot-reveal-action" onClick={() => loadQuestion(gameType)}>
+            <button className="hotspot-reveal-action" onClick={() => loadSessionTrack(sessionId, totalCount)}>
               Next Round
             </button>
           )}
+        </div>
+      )}
+
+      {/* Screen: Grand Finale Year Bonus Round */}
+      {screen === 'year_bonus' && (
+        <div className="game-card bg-reveal">
+          <div className="reveal-center-card">
+            <div style={{ fontFamily: 'Sancreek, serif', fontSize: '0.85rem', color: '#ffd54f', textShadow: '1px 1px 2px #000', marginBottom: '0.3rem' }}>
+              ⚡ GRAND FINALE ⚡
+            </div>
+            
+            <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 'bold', fontSize: '0.72rem', color: '#eeddbb', marginBottom: '0.8rem' }}>
+              WHAT YEAR WAS THIS CONCERT PLAYED?
+            </div>
+
+            {!yearGuessResult ? (
+              <div className="year-choices-grid">
+                {yearChoices.map((year, idx) => (
+                  <button 
+                    key={idx} 
+                    className="year-choice-btn"
+                    onClick={() => submitYearGuess(year)}
+                  >
+                    {year}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="year-result-container">
+                {yearGuessResult.correct ? (
+                  <div className="year-result-correct">
+                    ⚡ RIGHT ON! +500 BONUS POINTS! ⚡
+                  </div>
+                ) : (
+                  <div className="year-result-wrong">
+                    CONCERT WAS PLAYED IN {yearGuessResult.correctYear}
+                  </div>
+                )}
+                
+                <div style={{ fontSize: '0.62rem', color: '#eeddbb', marginTop: '0.6rem', opacity: 0.9 }}>
+                  {yearGuessResult.show ? `${yearGuessResult.show.venue} (${yearGuessResult.show.city}, ${yearGuessResult.show.state})` : ''}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {yearGuessResult && (
+            <button className="hotspot-reveal-action" onClick={loadPostShowReport}>
+              Post-Show Report 📜
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Screen: Post-Show Concert Report Card & Historical Trivia */}
+      {screen === 'post_show' && (
+        <div className="game-card bg-rules">
+          <div className="rules-content-card" style={{ top: '24%', height: '62%' }}>
+            <div className="rules-title" style={{ fontSize: '0.85rem' }}>POST-SHOW CONCERT REPORT</div>
+            
+            {postShowData && postShowData.show && (
+              <>
+                <div style={{ background: 'rgba(11, 2, 6, 0.7)', border: '1px solid #c29b53', borderRadius: '6px', padding: '0.4rem', marginBottom: '0.6rem', textAlign: 'center' }}>
+                  <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 900, fontSize: '0.82rem', color: '#ffd54f' }}>
+                    {postShowData.show.venue}
+                  </div>
+                  <div style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.64rem', color: '#eeddbb' }}>
+                    {postShowData.show.city}, {postShowData.show.state} • {postShowData.show.date}
+                  </div>
+                  <div style={{ fontSize: '0.54rem', color: '#eeddbb', opacity: 0.8, marginTop: '2px' }}>
+                    {postShowData.show.tour}
+                  </div>
+                </div>
+
+                <div className="ranks-title" style={{ marginTop: '0.4rem' }}>HISTORICAL CONCERT TRIVIA</div>
+                <div className="rules-section" style={{ maxHeight: '140px', overflowY: 'auto' }}>
+                  {postShowData.trivia && postShowData.trivia.length > 0 ? (
+                    postShowData.trivia.map((fact, idx) => (
+                      <div key={idx} className="rules-item" style={{ fontSize: '0.56rem', padding: '0.2rem 0' }}>
+                        ⚡ {fact}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rules-item" style={{ fontSize: '0.56rem' }}>
+                      ⚡ Recorded live during the Grateful Dead's peak touring era.
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          <button className="hotspot-rules-back" onClick={() => setScreen('gameover')}>
+            See Final Results
+          </button>
         </div>
       )}
 

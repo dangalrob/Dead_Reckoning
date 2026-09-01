@@ -388,11 +388,209 @@ app.get('/api/game/song-question', async (req, res) => {
       duration: selectedTrack.duration,
       startOffset
     });
-
   } catch (err) {
-    console.error("Error creating song question:", err.message);
-    res.status(500).json({ error: "Failed to load audio song question from Relisten API." });
+    res.status(500).json({ error: "Failed to generate song question." });
   }
+});
+
+// Path to shows & historical trivia database
+const SHOWS_FILE = path.join(__dirname, 'data', 'shows.json');
+
+function loadShowsData() {
+  try {
+    const data = fs.readFileSync(SHOWS_FILE, 'utf8');
+    return JSON.parse(data);
+  } catch (err) {
+    console.error("Error reading shows.json:", err);
+    return [];
+  }
+}
+
+// Helper: Get today's daily show (or hash pick from shows.json)
+function getDailyShow() {
+  const shows = loadShowsData();
+  if (!shows || shows.length === 0) return null;
+
+  const now = new Date();
+  const monthDay = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  
+  // Find a show whose date matches today's month & day
+  const match = shows.find(s => s.date.endsWith(monthDay));
+  if (match) return match;
+
+  // Fallback: Use day of year index
+  const startOfYear = new Date(now.getFullYear(), 0, 0);
+  const diff = now - startOfYear;
+  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+  return shows[dayOfYear % shows.length];
+}
+
+// Endpoint: Start a Concert Tour Game Session (10 clips from 1 show)
+app.post('/api/game/start-session', async (req, res) => {
+  const { mode = 'daily' } = req.body;
+  const shows = loadShowsData();
+
+  let selectedShow = null;
+  if (mode === 'daily') {
+    selectedShow = getDailyShow();
+  } else {
+    selectedShow = shows[Math.floor(Math.random() * shows.length)];
+  }
+
+  if (!selectedShow) {
+    return res.status(500).json({ error: "Failed to select concert show." });
+  }
+
+  try {
+    let validTracks = [];
+    try {
+      const showDetailsRes = await axios.get(`https://api.relisten.net/api/v2/artists/grateful-dead/shows/${selectedShow.date}`);
+      const sources = showDetailsRes.data ? showDetailsRes.data.sources : [];
+      if (sources && sources.length > 0) {
+        const source = sources[0];
+        const allTracks = source.sets.flatMap(set => set.tracks || []);
+        validTracks = allTracks.filter(track => isValidSong(track.title) && track.mp3_url);
+      }
+    } catch (e) {
+      console.warn("Relisten fetch error for show, using fallback:", e.message);
+    }
+
+    if (validTracks.length < 5) {
+      const fallbackSongs = [
+        "Touch of Grey", "Sugar Magnolia", "Truckin'", "Uncle John's Band", 
+        "Casey Jones", "Friend of the Devil", "Ripple", "Box of Rain", 
+        "Scarlet Begonias", "Fire on the Mountain", "Eyes of the World", "Dark Star"
+      ];
+      validTracks = fallbackSongs.slice(0, 10).map((name, i) => ({
+        title: name,
+        mp3_url: 'https://ia800408.us.archive.org/29/items/gd77-05-08.sbd.hicks.4982.sbeok.shnf/gd77-05-08d1t01.mp3',
+        duration: 300
+      }));
+    }
+
+    const sessionTracks = validTracks.slice(0, 10).map(t => {
+      const cleanTitle = t.title.replace(/->/g, '').replace(/ live/gi, '').trim();
+      const distractors = ALL_DEAD_SONGS
+        .filter(s => s.toLowerCase() !== cleanTitle.toLowerCase())
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 3);
+      const choices = [cleanTitle, ...distractors].sort(() => 0.5 - Math.random());
+
+      return {
+        trackName: cleanTitle,
+        mp3_url: t.mp3_url,
+        duration: t.duration || 300,
+        choices
+      };
+    });
+
+    const actualYear = selectedShow.year;
+    const yearDistractors = [actualYear - 5, actualYear - 2, actualYear + 3, actualYear + 7, actualYear - 3, actualYear + 4]
+      .filter(y => y >= 1965 && y <= 1995 && y !== actualYear)
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 3);
+    
+    const yearChoices = [actualYear, ...yearDistractors].sort((a, b) => a - b);
+
+    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+    activeGames[sessionId] = {
+      sessionId,
+      mode,
+      show: selectedShow,
+      tracks: sessionTracks,
+      yearChoices,
+      currentTrackIndex: 0,
+      score: 0,
+      lives: 3,
+      correctCount: 0,
+      totalCount: 0,
+      yearGuessed: false,
+      yearCorrect: false
+    };
+
+    res.json({
+      sessionId,
+      totalTracks: sessionTracks.length,
+      mode,
+      yearChoices,
+      showTitle: mode === 'daily' ? `TODAY'S TOUR CONCERT` : `ARCHIVE TOUR CONCERT`
+    });
+  } catch (err) {
+    console.error("Session start error:", err);
+    res.status(500).json({ error: "Failed to initialize concert session." });
+  }
+});
+
+// Endpoint: Fetch next session track (without revealing show date/year!)
+app.get('/api/game/session-track', (req, res) => {
+  const { sessionId, trackIndex } = req.query;
+  const game = activeGames[sessionId];
+
+  if (!game) {
+    return res.status(404).json({ error: "Session not found or expired." });
+  }
+
+  const idx = parseInt(trackIndex || '0', 10);
+  if (idx < 0 || idx >= game.tracks.length) {
+    return res.status(400).json({ error: "Track index out of bounds." });
+  }
+
+  const track = game.tracks[idx];
+  const startOffset = Math.floor(Math.random() * Math.max(1, (track.duration || 300) - 25));
+
+  res.json({
+    sessionId,
+    trackIndex: idx,
+    totalTracks: game.tracks.length,
+    audioUrl: track.mp3_url,
+    startOffset,
+    choices: track.choices,
+    correctSong: track.trackName
+  });
+});
+
+// Endpoint: Evaluate Year Bonus Guess (+500 BONUS PTS)
+app.post('/api/game/guess-year', (req, res) => {
+  const { sessionId, yearGuess } = req.body;
+  const game = activeGames[sessionId];
+
+  if (!game) {
+    return res.status(404).json({ error: "Session not found or expired." });
+  }
+
+  const actualYear = game.show.year;
+  const isCorrect = parseInt(yearGuess, 10) === parseInt(actualYear, 10);
+  const bonusPoints = isCorrect ? 500 : 0;
+
+  game.yearGuessed = true;
+  game.yearCorrect = isCorrect;
+  if (isCorrect) game.score += bonusPoints;
+
+  res.json({
+    correct: isCorrect,
+    correctYear: actualYear,
+    bonusPoints,
+    show: game.show
+  });
+});
+
+// Endpoint: Fetch Post-Show Concert Report Card & Historical Trivia
+app.get('/api/game/post-show-report', (req, res) => {
+  const { sessionId } = req.query;
+  const game = activeGames[sessionId];
+
+  if (!game) {
+    return res.status(404).json({ error: "Session not found." });
+  }
+
+  res.json({
+    show: game.show,
+    mode: game.mode,
+    score: game.score,
+    correctCount: game.correctCount,
+    yearCorrect: game.yearCorrect,
+    trivia: game.show.trivia || []
+  });
 });
 
 // Endpoint: Stream the audio anonymously via server proxy (anti-cheat)

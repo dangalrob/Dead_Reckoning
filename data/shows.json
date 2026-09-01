@@ -1,0 +1,146 @@
+[
+  {
+    "id": "1977-05-08",
+    "date": "1977-05-08",
+    "year": 1977,
+    "decade": "70s",
+    "venue": "Barton Hall, Cornell University",
+    "city": "Ithaca",
+    "state": "NY",
+    "tour": "Spring 1977 Tour",
+    "trivia": [
+      "Selected for preservation in the US Library of Congress National Recording Registry in 2012.",
+      "Widely considered by Deadheads and critics to be one of the greatest live performances in rock history.",
+      "Features a legendary 15-minute 'St. Stephen' -> 'Not Fade Away' -> 'St. Stephen' jam suite."
+    ]
+  },
+  {
+    "id": "1990-03-29",
+    "date": "1990-03-29",
+    "year": 1990,
+    "decade": "90s",
+    "venue": "Nassau Veterans Memorial Coliseum",
+    "city": "Uniondale",
+    "state": "NY",
+    "tour": "Spring 1990 Tour",
+    "trivia": [
+      "Jazz saxophonist Branford Marsalis sat in for the entire second set, creating a legendary 'Eyes of the World'.",
+      "Jerry Garcia praised Branford's playing, stating it felt like playing with an official member of the band.",
+      "Released as the acclaimed live album 'Without a Net' and 'Wake Up to Find Out'."
+    ]
+  },
+  {
+    "id": "1972-08-27",
+    "date": "1972-08-27",
+    "year": 1972,
+    "decade": "70s",
+    "venue": "Old Renaissance Faire Grounds",
+    "city": "Veneta",
+    "state": "OR",
+    "tour": "Sunshine Daydream Benefit",
+    "trivia": [
+      "Benefit concert for the Springfield Creamery owned by Ken Kesey's family ('Sunshine Daydream').",
+      "The temperature on stage reached over 100°F during a legendary 31-minute performance of 'Dark Star'.",
+      "Filmed and released as the famous concert documentary movie 'Sunshine Daydream'."
+    ]
+  },
+  {
+    "id": "1978-12-31",
+    "date": "1978-12-31",
+    "year": 1978,
+    "decade": "70s",
+    "venue": "Winterland Arena",
+    "city": "San Francisco",
+    "state": "CA",
+    "tour": "Closing of Winterland",
+    "trivia": [
+      "The final concert ever held at the legendary Winterland Arena before its permanent closing.",
+      "Promoter Bill Graham descended from the ceiling in a giant glowing cannabis joint at midnight.",
+      "The band played a marathon 5-hour set lasting past 5:00 AM, serving breakfast to the audience at dawn."
+    ]
+  },
+  {
+    "id": "1979-08-04",
+    "date": "1979-08-04",
+    "year": 1979,
+    "decade": "70s",
+    "venue": "Oakland Alameda County Stadium",
+    "city": "Oakland",
+    "state": "CA",
+    "tour": "Summer 1979 Tour",
+    "trivia": [
+      "Historic first performance where Jerry Garcia debuted his custom Doug Irwin 'Tiger' guitar on stage.",
+      "Part of the 'Day on the Green' festival lineup co-headlining with elements of Jefferson Starship."
+    ]
+  },
+  {
+    "id": "1987-04-17",
+    "date": "1987-04-17",
+    "year": 1987,
+    "decade": "80s",
+    "venue": "Irvine Meadows Amphitheatre",
+    "city": "Irvine",
+    "state": "CA",
+    "tour": "Spring 1987 Tour",
+    "trivia": [
+      "The opening show of the massive 1987 Spring/Summer Tour following Jerry Garcia's health recovery.",
+      "Preceded the release of 'In the Dark', the album that launched 'Touch of Grey' into the Top 10."
+    ]
+  },
+  {
+    "id": "1989-07-07",
+    "date": "1989-07-07",
+    "year": 1989,
+    "decade": "80s",
+    "venue": "JFK Stadium",
+    "city": "Philadelphia",
+    "state": "PA",
+    "tour": "Summer 1989 Tour",
+    "trivia": [
+      "The final concert ever performed at JFK Stadium before it was condemned and demolished.",
+      "Attended by over 74,000 Deadheads and released as the famous 'Crimson White & Indigo' concert film."
+    ]
+  },
+  {
+    "id": "1970-02-13",
+    "date": "1970-02-13",
+    "year": 1970,
+    "decade": "70s",
+    "venue": "Fillmore East",
+    "city": "New York",
+    "state": "NY",
+    "tour": "Fillmore East Residency",
+    "trivia": [
+      "Famous late-night Friday the 13th show featuring acoustic and electric sets.",
+      "Duane Allman and Peter Green sat in during an epic late-night jam on 'Dark Star' -> 'Spanish Jam'."
+    ]
+  },
+  {
+    "id": "1980-10-31",
+    "date": "1980-10-31",
+    "year": 1980,
+    "decade": "80s",
+    "venue": "Radio City Music Hall",
+    "city": "New York",
+    "state": "NY",
+    "tour": "15th Anniversary Tour",
+    "trivia": [
+      "Halloween night show during the 15th Anniversary Radio City Music Hall residency.",
+      "Opened by comedians Al Franken and Tom Davis, broadcast live via satellite to closed-circuit theaters."
+    ]
+  },
+  {
+    "id": "1991-09-26",
+    "date": "1991-09-26",
+    "year": 1991,
+    "decade": "90s",
+    "venue": "Boston Garden",
+    "city": "Boston",
+    "state": "MA",
+    "tour": "Fall 1991 Tour",
+    "trivia": [
+      "Featured Bruce Hornsby on grand piano and accordion alongside Vince Welnick.",
+      "Part of an acclaimed 6-night sellout run at the historic Boston Garden."
+    ]
+  }
+]

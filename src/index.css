@@ -1610,6 +1610,60 @@ body {
   border: 1px solid rgba(238, 221, 187, 0.2);
 }
 
+/* Year Bonus Round Layout & Choice Grid */
+.year-choices-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 0.4rem;
+}
+
+.year-choice-btn {
+  background: rgba(43, 15, 26, 0.9);
+  border: 2px solid #c29b53;
+  color: #eeddbb;
+  font-family: 'Sancreek', serif;
+  font-size: 1.1rem;
+  padding: 0.6rem 0.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  transition: all 0.15s ease-in-out;
+}
+
+.year-choice-btn:hover {
+  background: #c29b53;
+  color: #1a060d;
+  transform: scale(1.04);
+  box-shadow: 0 0 12px rgba(255, 213, 79, 0.8);
+}
+
+.year-choice-btn:active {
+  transform: scale(0.96);
+}
+
+.year-result-container {
+  margin-top: 0.4rem;
+  text-align: center;
+}
+
+.year-result-correct {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 0.76rem;
+  color: #a5d6a7;
+  text-shadow: 0 0 8px rgba(76, 175, 80, 0.8);
+}
+
+.year-result-wrong {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 0.72rem;
+  color: #ffab91;
+  text-shadow: 0 0 8px rgba(244, 67, 54, 0.8);
+}
+
 /* Mobile Responsive Scaling: utilize viewport space better on iPhones/smaller viewports */
 @media (max-width: 480px) {
   #root {
