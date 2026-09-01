@@ -1360,6 +1360,256 @@ body {
   transform: scale(0.96);
 }
 
+/* Secret Admin Audit Hotspot (Lower Right Corner on Leaderboard) */
+.hotspot-leaderboard-audit {
+  position: absolute;
+  top: 90.4%;
+  left: 71.0%;
+  width: 24.0%;
+  height: 7.5%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 15;
+  outline: none;
+  opacity: 0.15;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.hotspot-leaderboard-audit:hover {
+  opacity: 0.8;
+  background: rgba(238, 221, 187, 0.08);
+  border-radius: 6px;
+}
+
+/* Device Audit Report Modal */
+.audit-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(11, 2, 6, 0.88);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.audit-modal-card {
+  width: 90%;
+  max-width: 440px;
+  height: 82vh;
+  max-height: 620px;
+  background: rgba(26, 6, 13, 0.98);
+  border: 2px solid #c29b53;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 0.8rem;
+  overflow: hidden;
+}
+
+.audit-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid rgba(238, 221, 187, 0.2);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.audit-modal-title {
+  font-family: 'Sancreek', serif;
+  font-size: 0.95rem;
+  color: #eeddbb;
+  text-shadow: 1px 1px 2px #000;
+  letter-spacing: 0.5px;
+}
+
+.audit-modal-close {
+  background: transparent;
+  border: 1px solid #c29b53;
+  color: #eeddbb;
+  font-size: 0.9rem;
+  font-weight: bold;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease-in-out;
+}
+
+.audit-modal-close:hover {
+  background: var(--crimson);
+  color: #fff;
+}
+
+.audit-filter-bar {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.6rem;
+}
+
+.audit-filter-btn {
+  flex: 1;
+  background: rgba(43, 15, 26, 0.8);
+  border: 1px solid #5c3d2e;
+  color: #eeddbb;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 0.52rem;
+  padding: 0.35rem 0.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.audit-filter-btn.active {
+  background: #c29b53;
+  color: #1a060d;
+  border-color: #fff;
+  font-weight: 900;
+}
+
+.audit-filter-btn.warning.active {
+  background: #e65100;
+  color: #fff;
+}
+
+.audit-filter-btn.multi.active {
+  background: #8e24aa;
+  color: #fff;
+}
+
+.audit-report-body {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-right: 0.2rem;
+}
+
+.audit-report-body::-webkit-scrollbar {
+  width: 4px;
+}
+.audit-report-body::-webkit-scrollbar-thumb {
+  background: #c29b53;
+  border-radius: 4px;
+}
+
+.audit-loading {
+  font-family: 'Outfit', sans-serif;
+  font-weight: bold;
+  font-size: 0.72rem;
+  color: #eeddbb;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.audit-item-card {
+  background: rgba(43, 15, 26, 0.95);
+  border: 1px solid #c29b53;
+  border-radius: 8px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.audit-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.58rem;
+}
+
+.audit-item-row.top {
+  border-bottom: 1px dashed rgba(238, 221, 187, 0.2);
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.1rem;
+}
+
+.audit-device-id {
+  font-weight: bold;
+  color: #eeddbb;
+  font-family: monospace;
+}
+
+.audit-last-seen {
+  color: #eeddbb;
+  opacity: 0.7;
+  font-size: 0.52rem;
+}
+
+.audit-label {
+  color: #eeddbb;
+  opacity: 0.8;
+  font-size: 0.54rem;
+}
+
+.audit-val {
+  color: #fff;
+  font-weight: bold;
+  font-size: 0.58rem;
+}
+
+.audit-val.highlight {
+  color: #ffd54f;
+  font-size: 0.64rem;
+}
+
+.audit-item-row.stats {
+  background: rgba(11, 2, 6, 0.6);
+  padding: 0.25rem 0.4rem;
+  border-radius: 4px;
+  color: #eeddbb;
+  font-size: 0.52rem;
+  margin-top: 0.1rem;
+}
+
+.audit-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.2rem;
+}
+
+.badge {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 0.5rem;
+  padding: 0.18rem 0.35rem;
+  border-radius: 4px;
+  letter-spacing: 0.3px;
+}
+
+.badge.warning {
+  background: rgba(230, 81, 0, 0.25);
+  color: #ff9800;
+  border: 1px solid #e65100;
+}
+
+.badge.multi {
+  background: rgba(142, 36, 170, 0.25);
+  color: #ce93d8;
+  border: 1px solid #8e24aa;
+}
+
+.badge.meta {
+  background: rgba(238, 221, 187, 0.1);
+  color: #eeddbb;
+  border: 1px solid rgba(238, 221, 187, 0.2);
+}
+
 /* Mobile Responsive Scaling: utilize viewport space better on iPhones/smaller viewports */
 @media (max-width: 480px) {
   #root {

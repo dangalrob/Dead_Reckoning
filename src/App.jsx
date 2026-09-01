@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { getDeviceId, pingUserActivity } from './utils/device.js';
 import { 
   DancingBear, 
   StealieEmblem, 
@@ -146,8 +147,20 @@ export default function App() {
   const [scoreSaved, setScoreSaved] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Device audit report modal states
+  const [auditModalOpen, setAuditModalOpen] = useState(false);
+  const [auditReport, setAuditReport] = useState([]);
+  const [auditFilter, setAuditFilter] = useState('all'); // 'all', 'noname', 'multiname'
+  const [loadingAudit, setLoadingAudit] = useState(false);
+
   const audioRef = useRef(null);
   const timerIntervalRef = useRef(null);
+
+  // Ping device user activity and fetch initial leaderboard on startup
+  useEffect(() => {
+    pingUserActivity();
+    fetchLeaderboard();
+  }, []);
 
   // Fetch leaderboard statistics
   const fetchLeaderboard = async () => {
@@ -363,11 +376,13 @@ export default function App() {
     if (!playerInitials.trim() || playerInitials.length > 10) return;
 
     try {
+      const deviceId = getDeviceId();
       await axios.post('/api/game/leaderboard', {
         name: playerInitials.trim(),
         score,
         difficulty: getDifficultyRating(score),
-        gameType
+        gameType,
+        deviceId
       });
       setScoreSaved(true);
       fetchLeaderboard();
@@ -825,6 +840,108 @@ export default function App() {
 
           {/* Interactive Play Again placard Hotspot */}
           <button className="hotspot-leaderboard-back" onClick={returnToMainMenu}></button>
+
+          {/* Secret Admin Device Audit Report Hotspot (Lower Right Hand Corner) */}
+          <button 
+            className="hotspot-leaderboard-audit" 
+            onClick={async () => {
+              setLoadingAudit(true);
+              setAuditModalOpen(true);
+              try {
+                const res = await axios.get('/api/admin/device-report');
+                setAuditReport(res.data);
+              } catch (err) {
+                console.error("Audit report error:", err);
+              } finally {
+                setLoadingAudit(false);
+              }
+            }}
+            title="Open Device Audit Report"
+          ></button>
+        </div>
+      )}
+
+      {/* Secret Admin Device Audit Report Modal */}
+      {auditModalOpen && (
+        <div className="audit-modal-overlay">
+          <div className="audit-modal-card">
+            <div className="audit-modal-header">
+              <div className="audit-modal-title">⚡ DEVICE AUDIT REPORT ⚡</div>
+              <button className="audit-modal-close" onClick={() => setAuditModalOpen(false)}>✕</button>
+            </div>
+
+            <div className="audit-filter-bar">
+              <button 
+                className={`audit-filter-btn ${auditFilter === 'all' ? 'active' : ''}`}
+                onClick={() => setAuditFilter('all')}
+              >
+                ALL ({auditReport.length})
+              </button>
+              <button 
+                className={`audit-filter-btn warning ${auditFilter === 'noname' ? 'active' : ''}`}
+                onClick={() => setAuditFilter('noname')}
+              >
+                ⚠️ NO NAME ({auditReport.filter(r => r.hasNoNameOnLeaderboard).length})
+              </button>
+              <button 
+                className={`audit-filter-btn multi ${auditFilter === 'multiname' ? 'active' : ''}`}
+                onClick={() => setAuditFilter('multiname')}
+              >
+                ⚡ MULTI NAMES ({auditReport.filter(r => r.usedMultipleNames).length})
+              </button>
+            </div>
+
+            <div className="audit-report-body">
+              {loadingAudit ? (
+                <div className="audit-loading">GENERATING AUDIT REPORT...</div>
+              ) : auditReport.length === 0 ? (
+                <div className="audit-loading">NO DEVICE ACTIVITY RECORDED YET</div>
+              ) : (
+                auditReport
+                  .filter(item => {
+                    if (auditFilter === 'noname') return item.hasNoNameOnLeaderboard;
+                    if (auditFilter === 'multiname') return item.usedMultipleNames;
+                    return true;
+                  })
+                  .map((item, idx) => (
+                    <div key={idx} className="audit-item-card">
+                      <div className="audit-item-row top">
+                        <span className="audit-device-id">🆔 {item.deviceId ? `${item.deviceId.substring(0, 16)}...` : 'UNKNOWN DEVICE'}</span>
+                        <span className="audit-last-seen">{item.lastSeen ? new Date(item.lastSeen).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'UNKNOWN'}</span>
+                      </div>
+
+                      <div className="audit-item-row">
+                        <span className="audit-label">SAVED NAME:</span>
+                        <span className="audit-val highlight">{item.latestName}</span>
+                      </div>
+
+                      <div className="audit-item-row">
+                        <span className="audit-label">NAMES USED ({item.namesUsed ? item.namesUsed.length : 0}):</span>
+                        <span className="audit-val">{item.namesUsed && item.namesUsed.length > 0 ? item.namesUsed.join(', ') : 'NONE'}</span>
+                      </div>
+
+                      <div className="audit-item-row stats">
+                        <span>GAMES STARTED: <strong>{item.gamesStarted}</strong></span>
+                        <span>SUBMITTED: <strong>{item.scoresSubmitted}</strong></span>
+                        <span>BEST: <strong>{item.highestScore}</strong></span>
+                      </div>
+
+                      <div className="audit-badges">
+                        {item.hasNoNameOnLeaderboard && (
+                          <span className="badge warning">⚠️ STARTED APP - NO LEADERBOARD ENTRY</span>
+                        )}
+                        {item.usedMultipleNames && (
+                          <span className="badge multi">⚡ USED {item.namesUsed.length} DIFFERENT NAMES</span>
+                        )}
+                        {item.deviceMeta && item.deviceMeta.os && (
+                          <span className="badge meta">📱 {item.deviceMeta.os} ({item.deviceMeta.screenWidth || 0}x{item.deviceMeta.screenHeight || 0})</span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
+          </div>
         </div>
       )}
 

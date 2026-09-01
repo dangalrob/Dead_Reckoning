@@ -3,6 +3,7 @@ const cors = require('cors');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -10,6 +11,53 @@ const PORT = process.env.PORT || 5000;
 // Enable CORS and JSON parsing
 app.use(cors());
 app.use(express.json());
+
+// Setup Postgres connection pool if DATABASE_URL is available
+let dbPool = null;
+if (process.env.DATABASE_URL) {
+  try {
+    dbPool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.DATABASE_URL.includes('localhost') ? false : { rejectUnauthorized: false }
+    });
+    console.log("DIAGNOSTICS - Initializing PostgreSQL connection pool...");
+
+    // Auto-create database tables
+    const initDb = async () => {
+      const client = await dbPool.connect();
+      try {
+        await client.query(`
+          CREATE TABLE IF NOT EXISTS users (
+            device_id VARCHAR(128) PRIMARY KEY,
+            latest_name VARCHAR(64),
+            games_started INT DEFAULT 1,
+            device_meta JSONB,
+            first_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+
+          CREATE TABLE IF NOT EXISTS leaderboard (
+            id SERIAL PRIMARY KEY,
+            device_id VARCHAR(128),
+            name VARCHAR(64) NOT NULL,
+            score INT NOT NULL,
+            difficulty VARCHAR(32) DEFAULT 'medium',
+            game_type VARCHAR(32) DEFAULT 'song',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+        console.log("DIAGNOSTICS - PostgreSQL tables verified/created successfully!");
+      } finally {
+        client.release();
+      }
+    };
+    initDb().catch(err => console.error("PostgreSQL Init Error:", err));
+  } catch (err) {
+    console.error("Failed to configure PostgreSQL pool:", err);
+  }
+} else {
+  console.log("DIAGNOSTICS - No DATABASE_URL found. Running with local storage fallback.");
+}
 
 // Serve static files from React build directory in production
 app.use(express.static(path.join(__dirname, 'dist')));
@@ -403,11 +451,51 @@ function loadLeaderboardData() {
   }
 }
 
-// Endpoint: Fetch high score leaderboard
-app.get('/api/game/leaderboard', (req, res) => {
+// Endpoint: Track user device activity and session start
+app.post('/api/user/activity', async (req, res) => {
+  const { deviceId, deviceMeta } = req.body;
+  if (!deviceId) return res.status(400).json({ error: "deviceId is required" });
+
   try {
+    if (dbPool) {
+      const client = await dbPool.connect();
+      try {
+        await client.query(`
+          INSERT INTO users (device_id, games_started, device_meta, first_seen, last_seen)
+          VALUES ($1, 1, $2, NOW(), NOW())
+          ON CONFLICT (device_id) DO UPDATE
+          SET games_started = users.games_started + 1,
+              device_meta = COALESCE($2, users.device_meta),
+              last_seen = NOW();
+        `, [deviceId, JSON.stringify(deviceMeta || {})]);
+      } finally {
+        client.release();
+      }
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error logging user activity:", err);
+    res.json({ success: false });
+  }
+});
+
+// Endpoint: Fetch high score leaderboard
+app.get('/api/game/leaderboard', async (req, res) => {
+  try {
+    if (dbPool) {
+      const decadeQuery = await dbPool.query(
+        `SELECT name, score, difficulty, created_at::text as date FROM leaderboard WHERE game_type = 'decade' ORDER BY score DESC LIMIT 10;`
+      );
+      const songQuery = await dbPool.query(
+        `SELECT name, score, difficulty, created_at::text as date FROM leaderboard WHERE game_type = 'song' ORDER BY score DESC LIMIT 10;`
+      );
+      return res.json({
+        decade: decadeQuery.rows,
+        song: songQuery.rows
+      });
+    }
+
     const scores = loadLeaderboardData();
-    // Sort both arrays descending
     scores.decade.sort((a, b) => b.score - a.score);
     scores.song.sort((a, b) => b.score - a.score);
     res.json({
@@ -415,13 +503,22 @@ app.get('/api/game/leaderboard', (req, res) => {
       song: scores.song.slice(0, 10)
     });
   } catch (err) {
+    console.error("Leaderboard fetch error:", err);
     res.status(500).json({ error: "Failed to load leaderboard." });
   }
 });
 
 // Endpoint: Clear leaderboard data
-app.post('/api/leaderboard/clear', (req, res) => {
+app.post('/api/leaderboard/clear', async (req, res) => {
   try {
+    if (dbPool) {
+      const client = await dbPool.connect();
+      try {
+        await client.query(`DELETE FROM leaderboard;`);
+      } finally {
+        client.release();
+      }
+    }
     const emptyScores = { decade: [], song: [] };
     fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(emptyScores, null, 2), 'utf8');
     res.json(emptyScores);
@@ -431,38 +528,148 @@ app.post('/api/leaderboard/clear', (req, res) => {
 });
 
 // Endpoint: Submit high score
-app.post('/api/game/leaderboard', (req, res) => {
-  const { name, score, difficulty, gameType } = req.body;
+app.post('/api/game/leaderboard', async (req, res) => {
+  const { name, score, difficulty, gameType, deviceId } = req.body;
   if (!name || typeof score !== 'number') {
     return res.status(400).json({ error: "Invalid score submission data." });
   }
 
-  // Fallback to decade game if not specified
   const mode = gameType === 'song' ? 'song' : 'decade';
+  const sanitizedName = name.substring(0, 10).toUpperCase();
 
   try {
+    if (dbPool) {
+      const client = await dbPool.connect();
+      try {
+        await client.query(
+          `INSERT INTO leaderboard (device_id, name, score, difficulty, game_type) VALUES ($1, $2, $3, $4, $5);`,
+          [deviceId || null, sanitizedName, score, difficulty || 'medium', mode]
+        );
+
+        if (deviceId) {
+          await client.query(
+            `INSERT INTO users (device_id, latest_name, games_started, first_seen, last_seen)
+             VALUES ($1, $2, 1, NOW(), NOW())
+             ON CONFLICT (device_id) DO UPDATE
+             SET latest_name = $2, last_seen = NOW();`,
+            [deviceId, sanitizedName]
+          );
+        }
+      } finally {
+        client.release();
+      }
+    }
+
+    // Always record locally as double backup
     const scores = loadLeaderboardData();
-    
-    // Add new score to the correct game type list
     scores[mode].push({
-      name: name.substring(0, 10).toUpperCase(), // Supported up to 10 characters
+      name: sanitizedName,
       score,
       difficulty: difficulty || 'medium',
+      deviceId: deviceId || null,
       date: new Date().toISOString().split('T')[0]
     });
-
-    // Sort and limit lists
     scores[mode].sort((a, b) => b.score - a.score);
     scores[mode] = scores[mode].slice(0, 100);
-
     fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(scores, null, 2), 'utf8');
+
+    if (dbPool) {
+      const decadeQuery = await dbPool.query(
+        `SELECT name, score, difficulty, created_at::text as date FROM leaderboard WHERE game_type = 'decade' ORDER BY score DESC LIMIT 10;`
+      );
+      const songQuery = await dbPool.query(
+        `SELECT name, score, difficulty, created_at::text as date FROM leaderboard WHERE game_type = 'song' ORDER BY score DESC LIMIT 10;`
+      );
+      return res.json({
+        decade: decadeQuery.rows,
+        song: songQuery.rows
+      });
+    }
+
     res.json({
       decade: scores.decade.slice(0, 10),
       song: scores.song.slice(0, 10)
     });
-
   } catch (err) {
+    console.error("Score submission error:", err);
     res.status(500).json({ error: "Failed to save high score." });
+  }
+});
+
+// Endpoint: Secret Admin Device Audit Report
+app.get('/api/admin/device-report', async (req, res) => {
+  try {
+    if (dbPool) {
+      const queryText = `
+        SELECT 
+          u.device_id,
+          u.latest_name,
+          u.games_started,
+          u.device_meta,
+          u.first_seen,
+          u.last_seen,
+          ARRAY_AGG(DISTINCT l.name) FILTER (WHERE l.name IS NOT NULL) AS names_used,
+          COUNT(l.id) AS scores_submitted,
+          MAX(l.score) AS highest_score
+        FROM users u
+        LEFT JOIN leaderboard l ON u.device_id = l.device_id
+        GROUP BY u.device_id, u.latest_name, u.games_started, u.device_meta, u.first_seen, u.last_seen
+        ORDER BY u.last_seen DESC;
+      `;
+      const result = await dbPool.query(queryText);
+      const report = result.rows.map(row => {
+        const namesUsed = (row.names_used || []).filter(Boolean);
+        const scoresSubmitted = parseInt(row.scores_submitted || 0, 10);
+        return {
+          deviceId: row.device_id,
+          latestName: row.latest_name || 'NO NAME ADDED',
+          namesUsed,
+          gamesStarted: row.games_started || 1,
+          scoresSubmitted,
+          highestScore: row.highest_score || 0,
+          hasNoNameOnLeaderboard: scoresSubmitted === 0,
+          usedMultipleNames: namesUsed.length > 1,
+          firstSeen: row.first_seen,
+          lastSeen: row.last_seen,
+          deviceMeta: typeof row.device_meta === 'string' ? JSON.parse(row.device_meta) : (row.device_meta || {})
+        };
+      });
+      return res.json(report);
+    }
+
+    // Fallback JSON audit report if Postgres is not configured
+    const scores = loadLeaderboardData();
+    const allEntries = [...scores.decade, ...scores.song];
+    const reportMap = {};
+
+    allEntries.forEach(entry => {
+      const id = entry.deviceId || 'local_demo_device';
+      if (!reportMap[id]) {
+        reportMap[id] = {
+          deviceId: id,
+          latestName: entry.name,
+          namesUsed: [],
+          gamesStarted: 1,
+          scoresSubmitted: 0,
+          highestScore: 0,
+          hasNoNameOnLeaderboard: false,
+          usedMultipleNames: false,
+          lastSeen: entry.date,
+          deviceMeta: { os: 'Web Browser' }
+        };
+      }
+      if (!reportMap[id].namesUsed.includes(entry.name)) {
+        reportMap[id].namesUsed.push(entry.name);
+      }
+      reportMap[id].scoresSubmitted += 1;
+      if (entry.score > reportMap[id].highestScore) reportMap[id].highestScore = entry.score;
+      reportMap[id].usedMultipleNames = reportMap[id].namesUsed.length > 1;
+    });
+
+    res.json(Object.values(reportMap));
+  } catch (err) {
+    console.error("Device audit report error:", err);
+    res.status(500).json({ error: "Failed to generate audit report." });
   }
 });
 
