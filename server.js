@@ -4,6 +4,7 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -130,6 +131,90 @@ function saveUserData(deviceId, deviceMeta = null, latestName = null) {
     fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf8');
   } catch (err) {
     console.error("Error saving local user data:", err);
+  }
+}
+
+// Helper: Send email notification whenever someone submits a score to the leaderboard
+async function sendLeaderboardEmailNotification({ name, score, difficulty, gameType, deviceId }) {
+  const notificationEmail = process.env.NOTIFICATION_EMAIL || process.env.ADMIN_EMAIL;
+  if (!notificationEmail) {
+    console.log("DIAGNOSTICS - No NOTIFICATION_EMAIL set in env. Email dispatch skipped.");
+    return;
+  }
+
+  let transporter = null;
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587', 10),
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      }
+    });
+  } else if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+    transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD
+      }
+    });
+  }
+
+  if (!transporter) {
+    console.log("DIAGNOSTICS - NOTIFICATION_EMAIL set, but SMTP credentials (SMTP_HOST/SMTP_USER/SMTP_PASS or GMAIL_USER/GMAIL_APP_PASSWORD) missing in env.");
+    return;
+  }
+
+  const subject = `⚡ Dead Reckoning High Score: ${name} scored ${score.toLocaleString()} PTS! 🎸`;
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; background-color: #1a060d; color: #eeddbb; padding: 20px; border-radius: 8px;">
+      <h2 style="color: #ffd54f; border-bottom: 2px solid #eeddbb; padding-bottom: 10px; margin-top: 0;">
+        ⚡ NEW DEAD RECKONING HIGH SCORE SUBMITTED! ⚡
+      </h2>
+      <p style="font-size: 15px; color: #ffffff;">Someone just submitted a new score to the Dead Reckoning Leaderboard!</p>
+      
+      <table style="width: 100%; border-collapse: collapse; margin-top: 15px; color: #ffffff;">
+        <tr style="background-color: rgba(238, 221, 187, 0.1);">
+          <td style="padding: 10px; font-weight: bold; width: 35%;">Player Name:</td>
+          <td style="padding: 10px; font-weight: bold; color: #ffd54f; font-size: 18px;">${name}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; font-weight: bold;">Score:</td>
+          <td style="padding: 10px; color: #64dfdf; font-weight: bold; font-size: 18px;">${score.toLocaleString()} PTS</td>
+        </tr>
+        <tr style="background-color: rgba(238, 221, 187, 0.1);">
+          <td style="padding: 10px; font-weight: bold;">Difficulty Rating:</td>
+          <td style="padding: 10px;">${difficulty || 'medium'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; font-weight: bold;">Device ID:</td>
+          <td style="padding: 10px; font-family: monospace; font-size: 12px; color: #b8c1ec;">${deviceId || 'Unknown'}</td>
+        </tr>
+        <tr style="background-color: rgba(238, 221, 187, 0.1);">
+          <td style="padding: 10px; font-weight: bold;">Timestamp:</td>
+          <td style="padding: 10px;">${new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })} EDT</td>
+        </tr>
+      </table>
+
+      <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(238, 221, 187, 0.2); text-align: center;">
+        <a href="https://dead-reckoning-sc5l.onrender.com/" style="color: #ffd54f; font-size: 14px; text-decoration: none; font-weight: bold;">⚡ Play Dead Reckoning / View Leaderboard</a>
+      </div>
+    </div>
+  `;
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"Dead Reckoning Game" <${process.env.SMTP_USER || process.env.GMAIL_USER || 'notifications@deadreckoning.com'}>`,
+      to: notificationEmail,
+      subject,
+      html: htmlContent
+    });
+    console.log("DIAGNOSTICS - Leaderboard notification email sent! MessageId:", info.messageId);
+  } catch (err) {
+    console.error("DIAGNOSTICS - Failed to send leaderboard email notification:", err.message);
   }
 }
 
@@ -825,16 +910,22 @@ app.post('/api/game/leaderboard', async (req, res) => {
     scores[mode] = scores[mode].slice(0, 100);
     fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(scores, null, 2), 'utf8');
 
+    // Trigger asynchronous email notification (non-blocking)
+    sendLeaderboardEmailNotification({
+      name: sanitizedName,
+      score,
+      difficulty: difficulty || 'medium',
+      gameType: mode,
+      deviceId
+    }).catch(e => console.error("Email dispatch async error:", e.message));
+
     if (dbPool) {
-      const decadeQuery = await dbPool.query(
-        `SELECT name, score, difficulty, created_at::text as date FROM leaderboard WHERE game_type = 'decade' ORDER BY score DESC LIMIT 10;`
-      );
-      const songQuery = await dbPool.query(
-        `SELECT name, score, difficulty, created_at::text as date FROM leaderboard WHERE game_type = 'song' ORDER BY score DESC LIMIT 10;`
+      const allQuery = await dbPool.query(
+        `SELECT name, score, difficulty, created_at::text as date FROM leaderboard ORDER BY score DESC LIMIT 10;`
       );
       return res.json({
-        decade: decadeQuery.rows,
-        song: songQuery.rows
+        decade: allQuery.rows,
+        song: allQuery.rows
       });
     }
 
