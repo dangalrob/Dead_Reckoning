@@ -1268,11 +1268,6 @@ export default function App() {
             )}
           </div>
 
-          {/* Clear Leaderboard Overlay Button */}
-          <button className="clear-leaderboard-btn-overlay" onClick={clearLeaderboards}>
-            🗑️ CLEAR LEADERBOARD
-          </button>
-
           {/* Interactive Play Again placard Hotspot */}
           <button className="hotspot-leaderboard-back" onClick={returnToMainMenu}></button>
 
