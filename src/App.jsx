@@ -167,6 +167,25 @@ export default function App() {
 
   const audioRef = useRef(null);
   const timerIntervalRef = useRef(null);
+  const nextTrackRef = useRef(null);
+
+  // Preload all app background images on startup for instant 0ms screen transitions
+  useEffect(() => {
+    const imagesToPreload = [
+      '/tour_menu_bg_cleaned_v2.png',
+      '/tour_game_song_bg.png',
+      '/tour_reveal_bg_cleaned_v2.png',
+      '/tour_reveal_wrong_bg.png',
+      '/tour_leaderboard_bg.png',
+      '/tour_rules_bg.png',
+      '/tour_gameover_bg.png'
+    ];
+
+    imagesToPreload.forEach(src => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
 
   // Ping device user activity and fetch initial leaderboard on startup
   useEffect(() => {
@@ -247,7 +266,6 @@ export default function App() {
   };
 
   const loadSessionTrack = async (sId = sessionId, trackIdx = totalCount) => {
-    setLoading(true);
     setGameType('song');
     setGuessResult(null);
     setIsPlaying(false);
@@ -260,6 +278,20 @@ export default function App() {
       audioRef.current.pause();
     }
 
+    // Use pre-fetched track for instant 0ms track transition
+    if (nextTrackRef.current && nextTrackRef.current.trackIndex === trackIdx) {
+      const q = nextTrackRef.current.question;
+      setQuestion(q);
+      if (audioRef.current) {
+        audioRef.current.src = q.audioUrl;
+        audioRef.current.currentTime = q.startOffset;
+      }
+      nextTrackRef.current = null;
+      setScreen('game');
+      return;
+    }
+
+    setLoading(true);
     try {
       const res = await axios.get(`/api/game/session-track?sessionId=${sId}&trackIndex=${trackIdx}`);
       const trackData = res.data;
@@ -499,6 +531,27 @@ export default function App() {
       }
 
       setScreen('reveal');
+
+      // Pre-fetch next track in background while player views Reveal card
+      const nextIdx = totalCount + 1;
+      if (nextIdx < 10 && sessionId) {
+        axios.get(`/api/game/session-track?sessionId=${sessionId}&trackIndex=${nextIdx}`).then(res => {
+          const trackData = res.data;
+          nextTrackRef.current = {
+            trackIndex: nextIdx,
+            question: {
+              trackName: trackData.correctSong,
+              choices: trackData.choices,
+              audioUrl: trackData.audioUrl,
+              startOffset: trackData.startOffset
+            }
+          };
+          const preAudio = new Audio();
+          preAudio.preload = 'auto';
+          preAudio.src = trackData.audioUrl;
+        }).catch(err => console.warn("Next track pre-fetch error:", err));
+      }
+
       return;
     }
 
