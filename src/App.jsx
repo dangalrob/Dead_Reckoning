@@ -163,6 +163,7 @@ export default function App() {
   // Share Results modal state
   const [showShareModal, setShowShareModal] = useState(false);
   const [copiedShare, setCopiedShare] = useState(false);
+  const [isAudioBuffering, setIsAudioBuffering] = useState(false);
 
   const audioRef = useRef(null);
   const timerIntervalRef = useRef(null);
@@ -377,6 +378,18 @@ export default function App() {
     }
   };
 
+  // Handle audio buffering and playback events
+  const handleAudioPlaying = () => {
+    setIsAudioBuffering(false);
+    setIsPlaying(true);
+    startTimerCountdown();
+  };
+
+  const handleAudioWaiting = () => {
+    setIsAudioBuffering(true);
+    clearInterval(timerIntervalRef.current);
+  };
+
   // Start the countdown timer ONLY when the audio starts audibly playing
   const startTimerCountdown = () => {
     clearInterval(timerIntervalRef.current);
@@ -388,6 +401,7 @@ export default function App() {
             audioRef.current.pause();
           }
           setIsPlaying(false);
+          setIsAudioBuffering(false);
           submitGuess('timeout');
           return 0;
         }
@@ -400,12 +414,13 @@ export default function App() {
   const togglePlay = () => {
     if (!question || !audioRef.current) return;
 
-    if (isPlaying) {
+    if (isPlaying || isAudioBuffering) {
       audioRef.current.pause();
       setIsPlaying(false);
+      setIsAudioBuffering(false);
       clearInterval(timerIntervalRef.current);
     } else {
-      setIsPlaying(true);
+      setIsAudioBuffering(true);
       setHasPlayedOnce(true);
       try {
         if (audioRef.current.currentTime < question.startOffset) {
@@ -416,6 +431,7 @@ export default function App() {
       audioRef.current.play().catch(err => {
         console.error("Audio playback error:", err);
         setIsPlaying(false);
+        setIsAudioBuffering(false);
       });
     }
   };
@@ -662,8 +678,14 @@ export default function App() {
         src={question ? (question.audioUrl || `/api/game/stream/${question.gameId}`) : undefined}
         preload="auto"
         onTimeUpdate={handleTimeUpdate}
-        onPlaying={startTimerCountdown}
-        onPause={() => clearInterval(timerIntervalRef.current)}
+        onPlaying={handleAudioPlaying}
+        onWaiting={handleAudioWaiting}
+        onStalled={handleAudioWaiting}
+        onPause={() => {
+          setIsPlaying(false);
+          setIsAudioBuffering(false);
+          clearInterval(timerIntervalRef.current);
+        }}
         onLoadedMetadata={handleLoadedMetadata}
         style={{ display: 'none' }}
       />
@@ -818,13 +840,26 @@ export default function App() {
               <div className="v-hole"></div>
             </div>
 
+            {/* Semi-Transparent Play Triangle / Pause Overlay */}
+            <div className={`v-play-overlay ${isPlaying ? 'playing' : ''}`}>
+              {isAudioBuffering ? (
+                <div className="v-buffering-spinner"></div>
+              ) : isPlaying ? (
+                <span className="v-play-icon">❚❚</span>
+              ) : (
+                <span className="v-play-icon">▶</span>
+              )}
+            </div>
+
             {/* Bottom Screws */}
             <div className="v-screw bottom-left">⊕</div>
             <div className="v-screw bottom-right">⊕</div>
           </div>
 
-          {/* TIMER HUD Overlay */}
-          <div className="hud-timer-value">{timeLeft}</div>
+          {/* TIMER HUD Overlay Badge */}
+          <div className="hud-timer-value">
+            <span className="hud-timer-badge">⏱️ {timeLeft}s</span>
+          </div>
 
           {/* Guessing inputs */}
           {gameType === 'song' ? (

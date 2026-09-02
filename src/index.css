@@ -561,6 +561,56 @@ body {
   border-radius: 50%;
 }
 
+/* Semi-Transparent Play Triangle / Pause Overlay */
+.v-play-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(10, 12, 18, 0.65);
+  border: 2px solid rgba(255, 213, 79, 0.95);
+  box-shadow: 0 0 14px rgba(0, 0, 0, 0.85), 0 0 10px rgba(255, 213, 79, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 25;
+  transition: all 0.2s ease-in-out;
+  pointer-events: none;
+}
+
+.vector-cassette-tape:hover .v-play-overlay {
+  background: rgba(10, 12, 18, 0.85);
+  border-color: #ffffff;
+  transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: 0 0 18px rgba(255, 213, 79, 0.9);
+}
+
+.v-play-icon {
+  font-size: 1.25rem;
+  color: #ffd54f;
+  text-shadow: 0 0 8px rgba(255, 213, 79, 0.9);
+  margin-left: 3px; /* optical centering for triangle */
+  line-height: 1;
+}
+
+.v-play-overlay.playing .v-play-icon {
+  margin-left: 0;
+  font-size: 0.90rem;
+  opacity: 0.85;
+}
+
+.v-buffering-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 213, 79, 0.3);
+  border-top-color: #ffd54f;
+  border-radius: 50%;
+  animation: spin-loader 0.8s linear infinite;
+}
+
 /* Share Score Trigger Button */
 .share-score-trigger-btn {
   font-family: 'Outfit', sans-serif;
@@ -716,18 +766,27 @@ body {
 
 .hud-timer-value {
   position: absolute;
-  top: 41.9%;
-  left: 73.4%;
-  width: 12%;
-  height: 6%;
+  top: 36.8%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: 'Outfit', 'Courier New', sans-serif !important;
-  font-weight: bold;
-  font-size: 1.15rem;
-  color: #eeddbb;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  pointer-events: none;
+}
+
+.hud-timer-badge {
+  background: rgba(18, 5, 10, 0.94);
+  border: 1.5px solid #ffd54f;
+  border-radius: 12px;
+  padding: 3px 12px;
+  font-family: 'Outfit', sans-serif !important;
+  font-weight: 900;
+  font-size: 0.92rem;
+  color: #ffd54f;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.85), 0 0 10px rgba(255, 213, 79, 0.4);
+  letter-spacing: 0.5px;
 }
 
 /* Gameplay Buttons */
@@ -1215,14 +1274,15 @@ body {
 }
 
 .bg-game-song .hud-timer-value {
-  top: 40.2%;
-  left: 72.8%;
-  width: 11.7%;
-  height: 6.9%;
-  border: 2px solid #eeddbb;
-  border-radius: 50%;
-  background-color: rgba(43, 15, 26, 0.85);
-  box-shadow: 0 0 10px rgba(238, 221, 187, 0.8);
+  top: 36.8%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  width: auto;
+  height: auto;
+  border: none;
+  background-color: transparent;
+  box-shadow: none;
 }
 
 .bg-game-song .hotspot-play-clip {
