@@ -82,6 +82,7 @@ const activeGames = {};
 
 // Path to leaderboard storage
 const LEADERBOARD_FILE = path.join(__dirname, 'data', 'leaderboard.json');
+const USERS_FILE = path.join(__dirname, 'data', 'users.json');
 
 // Initialize leaderboard file if it doesn't exist (starts completely empty)
 if (!fs.existsSync(path.dirname(LEADERBOARD_FILE))) {
@@ -92,6 +93,44 @@ if (!fs.existsSync(LEADERBOARD_FILE)) {
     decade: [],
     song: []
   }, null, 2));
+}
+
+function loadUsersData() {
+  try {
+    if (fs.existsSync(USERS_FILE)) {
+      return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+    }
+  } catch (err) {}
+  return {};
+}
+
+function saveUserData(deviceId, deviceMeta = null, latestName = null) {
+  try {
+    const users = loadUsersData();
+    const existing = users[deviceId] || {
+      deviceId,
+      latestName: 'NO NAME ADDED',
+      namesUsed: [],
+      gamesStarted: 0,
+      firstSeen: new Date().toISOString(),
+      lastSeen: new Date().toISOString(),
+      deviceMeta: deviceMeta || {}
+    };
+
+    existing.gamesStarted += 1;
+    existing.lastSeen = new Date().toISOString();
+    if (deviceMeta) existing.deviceMeta = deviceMeta;
+    if (latestName) {
+      existing.latestName = latestName;
+      if (!existing.namesUsed.includes(latestName)) {
+        existing.namesUsed.push(latestName);
+      }
+    }
+    users[deviceId] = existing;
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf8');
+  } catch (err) {
+    console.error("Error saving local user data:", err);
+  }
 }
 
 // Helper: check if a track is a musical song (filtering out tuning, drums, space, markers, announcements)
@@ -423,23 +462,26 @@ app.post('/api/game/start-session', async (req, res) => {
   const { mode = 'daily', deviceId, deviceMeta } = req.body;
   const shows = loadShowsData();
 
-  if (deviceId && dbPool) {
-    try {
-      const client = await dbPool.connect();
+  if (deviceId) {
+    saveUserData(deviceId, deviceMeta);
+    if (dbPool) {
       try {
-        await client.query(`
-          INSERT INTO users (device_id, games_started, device_meta, first_seen, last_seen)
-          VALUES ($1, 1, $2, NOW(), NOW())
-          ON CONFLICT (device_id) DO UPDATE
-          SET games_started = users.games_started + 1,
-              device_meta = COALESCE($2, users.device_meta),
-              last_seen = NOW();
-        `, [deviceId, JSON.stringify(deviceMeta || {})]);
-      } finally {
-        client.release();
+        const client = await dbPool.connect();
+        try {
+          await client.query(`
+            INSERT INTO users (device_id, games_started, device_meta, first_seen, last_seen)
+            VALUES ($1, 1, $2::jsonb, NOW(), NOW())
+            ON CONFLICT (device_id) DO UPDATE
+            SET games_started = users.games_started + 1,
+                device_meta = COALESCE($2::jsonb, users.device_meta),
+                last_seen = NOW();
+          `, [deviceId, JSON.stringify(deviceMeta || {})]);
+        } finally {
+          client.release();
+        }
+      } catch (e) {
+        console.warn("User session logging error:", e.message);
       }
-    } catch (e) {
-      console.warn("User session logging error:", e.message);
     }
   }
 
@@ -667,16 +709,17 @@ app.post('/api/user/activity', async (req, res) => {
   const { deviceId, deviceMeta } = req.body;
   if (!deviceId) return res.status(400).json({ error: "deviceId is required" });
 
+  saveUserData(deviceId, deviceMeta);
   try {
     if (dbPool) {
       const client = await dbPool.connect();
       try {
         await client.query(`
           INSERT INTO users (device_id, games_started, device_meta, first_seen, last_seen)
-          VALUES ($1, 1, $2, NOW(), NOW())
+          VALUES ($1, 1, $2::jsonb, NOW(), NOW())
           ON CONFLICT (device_id) DO UPDATE
           SET games_started = users.games_started + 1,
-              device_meta = COALESCE($2, users.device_meta),
+              device_meta = COALESCE($2::jsonb, users.device_meta),
               last_seen = NOW();
         `, [deviceId, JSON.stringify(deviceMeta || {})]);
       } finally {
@@ -851,9 +894,10 @@ app.get('/api/admin/device-report', async (req, res) => {
     }
 
     // Fallback JSON audit report if Postgres is not configured
+    const usersMap = loadUsersData();
     const scores = loadLeaderboardData();
     const allEntries = [...scores.decade, ...scores.song];
-    const reportMap = {};
+    const reportMap = { ...usersMap };
 
     allEntries.forEach(entry => {
       const id = entry.deviceId || 'local_demo_device';
@@ -879,7 +923,13 @@ app.get('/api/admin/device-report', async (req, res) => {
       reportMap[id].usedMultipleNames = reportMap[id].namesUsed.length > 1;
     });
 
-    res.json(Object.values(reportMap));
+    const reportList = Object.values(reportMap).map(item => ({
+      ...item,
+      hasNoNameOnLeaderboard: item.scoresSubmitted === 0,
+      usedMultipleNames: (item.namesUsed || []).length > 1
+    }));
+
+    res.json(reportList);
   } catch (err) {
     console.error("Device audit report error:", err);
     res.status(500).json({ error: "Failed to generate audit report." });

@@ -143,9 +143,17 @@ export default function App() {
   const [lastStreakBonus, setLastStreakBonus] = useState(0);
   const [leaderboard, setLeaderboard] = useState({ decade: [], song: [] });
   const [activeLeaderboardType, setActiveLeaderboardType] = useState('decade');
-  const [playerInitials, setPlayerInitials] = useState('');
+  const [playerInitials, setPlayerInitials] = useState(() => {
+    return localStorage.getItem('dr_player_name') || '';
+  });
   const [scoreSaved, setScoreSaved] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleSetPlayerInitials = (val) => {
+    const sanitized = val.toUpperCase();
+    setPlayerInitials(sanitized);
+    localStorage.setItem('dr_player_name', sanitized);
+  };
 
   // Device audit report modal states
   const [auditModalOpen, setAuditModalOpen] = useState(false);
@@ -631,12 +639,14 @@ export default function App() {
   // Submit high score initials
   const submitHighScore = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    if (!playerInitials.trim() || playerInitials.length > 10) return;
+    const nameToSubmit = playerInitials.trim();
+    if (!nameToSubmit || nameToSubmit.length > 10) return;
 
     try {
       const deviceId = getDeviceId();
+      localStorage.setItem('dr_player_name', nameToSubmit.toUpperCase());
       await axios.post('/api/game/leaderboard', {
-        name: playerInitials.trim(),
+        name: nameToSubmit.toUpperCase(),
         score,
         difficulty: getDifficultyRating(score),
         gameType,
@@ -1061,7 +1071,7 @@ export default function App() {
                       style={{ fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center', width: '85%' }}
                       placeholder="YOUR NAME"
                       value={playerInitials}
-                      onChange={e => setPlayerInitials(e.target.value.toUpperCase())}
+                      onChange={e => handleSetPlayerInitials(e.target.value)}
                     />
                     <button 
                       className="year-choice-btn" 
@@ -1207,7 +1217,7 @@ export default function App() {
                   className="gameover-name-input"
                   placeholder="YOUR NAME"
                   value={playerInitials}
-                  onChange={e => setPlayerInitials(e.target.value.toUpperCase())}
+                  onChange={e => handleSetPlayerInitials(e.target.value)}
                   required
                   autoFocus
                 />
