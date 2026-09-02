@@ -160,6 +160,10 @@ export default function App() {
   const [yearGuessResult, setYearGuessResult] = useState(null);
   const [postShowData, setPostShowData] = useState(null);
 
+  // Share Results modal state
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [copiedShare, setCopiedShare] = useState(false);
+
   const audioRef = useRef(null);
   const timerIntervalRef = useRef(null);
 
@@ -168,6 +172,53 @@ export default function App() {
     pingUserActivity();
     fetchLeaderboard();
   }, []);
+
+  const generateShareText = () => {
+    const todayStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const rankTier = getScoreTier(score);
+    const scoreGrid = Array.from({ length: 10 }).map((_, i) => (i < correctCount ? '🟩' : '🟥')).join('');
+    
+    return `⚡ Dead Reckoning Tour Concert ⚡\n${todayStr}\nScore: ${score.toLocaleString()} PTS 🎸\nCorrect: ${correctCount} out of 10\nRank: ${rankTier}\n\n${scoreGrid}\n\nPlay Dead Reckoning: https://dead-reckoning-sc5l.onrender.com/`;
+  };
+
+  const copyShareText = () => {
+    const text = generateShareText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        setCopiedShare(true);
+        setTimeout(() => setCopiedShare(false), 2500);
+      }).catch(() => {
+        fallbackCopyText(text);
+      });
+    } else {
+      fallbackCopyText(text);
+    }
+  };
+
+  const fallbackCopyText = (text) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand("copy");
+      setCopiedShare(true);
+      setTimeout(() => setCopiedShare(false), 2500);
+    } catch (err) {
+      alert("Please copy text manually.");
+    }
+    document.body.removeChild(textArea);
+  };
+
+  const shareToTwitter = () => {
+    const text = encodeURIComponent(generateShareText());
+    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+  };
+
+  const shareToFacebook = () => {
+    const url = encodeURIComponent('https://dead-reckoning-sc5l.onrender.com/');
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+  };
 
   const startConcertSession = async (mode = 'daily') => {
     setLoading(true);
@@ -695,64 +746,73 @@ export default function App() {
             <span className="hud-song-counter">{totalCount + 1} out of 10</span>
           </div>
 
-          {/* TDK SA90 Authentic Grateful Dead Cassette Tape Play Button */}
+          {/* Smaller Vector-Styled Retro Cassette Tape Play Button */}
           <div 
-            className={`tdk-cassette-tape ${isPlaying ? 'playing' : ''}`}
+            className={`vector-cassette-tape ${isPlaying ? 'playing' : ''}`}
             onClick={togglePlay}
             title="Tap to Play/Pause Audio"
           >
             {/* Corner Screws */}
-            <div className="screw top-left">⊕</div>
-            <div className="screw top-right">⊕</div>
+            <div className="v-screw top-left">⊕</div>
+            <div className="v-screw top-right">⊕</div>
 
-            {/* Handwritten Paper J-Card Spine Label */}
-            <div className="cassette-paper-label">
-              <span className="side-letter">A</span>
-              <span className="handwritten-title">
-                {isPlaying ? "▶ PLAYING DEAD TAPE..." : "⚡ GRATEFUL DEAD: LIVE TAPE"}
-              </span>
-              <span className="label-checkboxes">☐ ON ☐ OFF</span>
-            </div>
-
-            {/* Clear Tape Window & White Reels with Magnetic Tape Spools */}
-            <div className="cassette-window-frame">
-              <div className={`tape-spool-outer left ${isPlaying ? 'spinning' : ''}`}>
-                <div className="white-spoke-hub">
-                  <div className="hub-teeth"></div>
-                </div>
-              </div>
-
-              {/* Tape Spool Bridge */}
-              <div className="tape-spool-bridge"></div>
-
-              <div className={`tape-spool-outer right ${isPlaying ? 'spinning' : ''}`}>
-                <div className="white-spoke-hub">
-                  <div className="hub-teeth"></div>
-                </div>
+            {/* Top Red Stripe Label */}
+            <div className="v-cassette-label">
+              <div className="v-red-stripe"></div>
+              <div className="v-label-content">
+                <span className="v-badge-a">A</span>
+                <span className="v-label-title">
+                  {isPlaying ? "▶ PLAYING CLIP..." : "⚡ GRATEFUL DEAD LIVE TAPE"}
+                </span>
+                <span className="v-label-boxes">☐ IN ☐ OUT</span>
               </div>
             </div>
 
-            {/* Bottom Gold Printing */}
-            <div className="cassette-gold-print">
-              <div className="tdk-logo-group">
-                <span className="tdk-emblem">❖</span>
-                <span className="tdk-text">TDK</span>
+            {/* Center Ribbed Texture Frame & Window */}
+            <div className="v-window-outer">
+              <div className="v-ribbed-left"></div>
+
+              {/* Clear Window with Tape Spools & Red Teeth Hubs */}
+              <div className="v-glass-window">
+                <div className={`v-tape-spool left ${isPlaying ? 'spinning' : ''}`}>
+                  <div className="v-white-hub">
+                    <div className="v-red-tooth t1"></div>
+                    <div className="v-red-tooth t2"></div>
+                    <div className="v-red-tooth t3"></div>
+                  </div>
+                </div>
+
+                <div className="v-tape-bridge"></div>
+
+                <div className={`v-tape-spool right ${isPlaying ? 'spinning' : ''}`}>
+                  <div className="v-white-hub">
+                    <div className="v-red-tooth t1"></div>
+                    <div className="v-red-tooth t2"></div>
+                    <div className="v-red-tooth t3"></div>
+                  </div>
+                </div>
               </div>
-              <span className="type-ii-text">IEC II / TYPE II  HIGH POSITION</span>
-              <span className="sa90-text">SA 90</span>
+
+              <div className="v-ribbed-right"></div>
+            </div>
+
+            {/* Bottom Label Strip & Red A 60 Badge */}
+            <div className="v-bottom-strip">
+              <span className="v-bias-text">Normal Bias 120μs EQ</span>
+              <span className="v-badge-60">A | 60</span>
             </div>
 
             {/* Bottom Trapezoid Housing */}
-            <div className="cassette-trapezoid-housing">
-              <div className="housing-hole"></div>
-              <div className="housing-hole"></div>
-              <div className="housing-hole"></div>
-              <div className="housing-hole"></div>
+            <div className="v-trapezoid">
+              <div className="v-hole"></div>
+              <div className="v-hole"></div>
+              <div className="v-hole"></div>
+              <div className="v-hole"></div>
             </div>
 
-            {/* Bottom Corner Screws */}
-            <div className="screw bottom-left">⊕</div>
-            <div className="screw bottom-right">⊕</div>
+            {/* Bottom Screws */}
+            <div className="v-screw bottom-left">⊕</div>
+            <div className="v-screw bottom-right">⊕</div>
           </div>
 
           {/* TIMER HUD Overlay */}
@@ -918,6 +978,12 @@ export default function App() {
                     {scoreSaved ? "✓ SCORE SAVED TO LEADERBOARD!" : ""}
                   </div>
                 )}
+
+                <div style={{ marginTop: '0.4rem', width: '100%' }}>
+                  <button className="share-score-trigger-btn" onClick={() => setShowShareModal(true)}>
+                    📤 SHARE RESULTS
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -951,7 +1017,7 @@ export default function App() {
                 </div>
 
                 <div className="ranks-title" style={{ marginTop: '0.4rem' }}>HISTORICAL CONCERT TRIVIA</div>
-                <div className="rules-section" style={{ maxHeight: '140px', overflowY: 'auto' }}>
+                <div className="rules-section" style={{ maxHeight: '120px', overflowY: 'auto' }}>
                   {postShowData.trivia && postShowData.trivia.length > 0 ? (
                     postShowData.trivia.map((fact, idx) => (
                       <div key={idx} className="rules-item" style={{ fontSize: '0.56rem', padding: '0.2rem 0' }}>
@@ -963,6 +1029,12 @@ export default function App() {
                       ⚡ Recorded live during the Grateful Dead's peak touring era.
                     </div>
                   )}
+                </div>
+
+                <div style={{ marginTop: '0.4rem', textAlign: 'center' }}>
+                  <button className="share-score-trigger-btn" onClick={() => setShowShareModal(true)}>
+                    📤 SHARE RESULTS
+                  </button>
                 </div>
               </>
             )}
@@ -1047,6 +1119,12 @@ export default function App() {
                 {scoreSaved ? "✓ SCORE SAVED TO LEADERBOARD!" : "SCORE IS ZERO - PLAY AGAIN!"}
               </div>
             )}
+
+            <div style={{ marginTop: '0.4rem', width: '100%', textAlign: 'center' }}>
+              <button className="share-score-trigger-btn" onClick={() => setShowShareModal(true)}>
+                📤 SHARE RESULTS
+              </button>
+            </div>
           </div>
 
           {/* Action buttons mapping to bottom red and blue boxes */}
@@ -1196,6 +1274,42 @@ export default function App() {
                     </div>
                   ))
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Share Results Modal */}
+      {showShareModal && (
+        <div className="share-modal-backdrop" onClick={() => setShowShareModal(false)}>
+          <div className="share-modal-card" onClick={e => e.stopPropagation()}>
+            <button className="share-modal-close" onClick={() => setShowShareModal(false)}>×</button>
+            <div className="share-modal-title">Share Your Results</div>
+            
+            <div className="share-text-box">
+              <div className="share-header-title">⚡ Dead Reckoning Tour Concert</div>
+              <div className="share-date">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+              <div className="share-stat-line">Score: <strong>{score.toLocaleString()} PTS 🎸</strong></div>
+              <div className="share-stat-line">Correct: <strong>{correctCount} out of 10</strong></div>
+              <div className="share-stat-line">Rank: <strong>{getScoreTier(score)}</strong></div>
+              <div className="share-emoji-grid">
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <span key={i} className="share-emoji-box">{i < correctCount ? '🟩' : '🟥'}</span>
+                ))}
+              </div>
+              <div className="share-url">Play Dead Reckoning at<br/><code>https://dead-reckoning-sc5l.onrender.com/</code></div>
+            </div>
+
+            <div className="share-buttons-row">
+              <button className="share-btn share-btn-copy" onClick={copyShareText}>
+                📋 {copiedShare ? "Copied!" : "Copy Text"}
+              </button>
+              <button className="share-btn share-btn-twitter" onClick={shareToTwitter}>
+                🐦 Twitter
+              </button>
+              <button className="share-btn share-btn-facebook" onClick={shareToFacebook}>
+                📘 Facebook
+              </button>
             </div>
           </div>
         </div>
