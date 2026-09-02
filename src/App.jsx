@@ -171,6 +171,7 @@ export default function App() {
 
   const startConcertSession = async (mode = 'daily') => {
     setLoading(true);
+    setGameType('song');
     setScore(0);
     setStreak(0);
     setLives(3);
@@ -195,9 +196,17 @@ export default function App() {
 
   const loadSessionTrack = async (sId = sessionId, trackIdx = totalCount) => {
     setLoading(true);
+    setGameType('song');
     setGuessResult(null);
     setIsPlaying(false);
     setHasPlayedOnce(false);
+    setTimeLeft(10);
+    setTotalTimeLimit(10);
+    clearInterval(timerIntervalRef.current);
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
 
     try {
       const res = await axios.get(`/api/game/session-track?sessionId=${sId}&trackIndex=${trackIdx}`);
@@ -561,7 +570,7 @@ export default function App() {
       {/* Hidden audio player */}
       <audio 
         ref={audioRef} 
-        src={question ? `/api/game/stream/${question.gameId}` : undefined}
+        src={question ? (question.audioUrl || `/api/game/stream/${question.gameId}`) : undefined}
         preload="auto"
         onTimeUpdate={handleTimeUpdate}
         onPlaying={startTimerCountdown}
