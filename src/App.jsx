@@ -692,41 +692,35 @@ export default function App() {
 
           {/* Track name / Identifier Label */}
           <div className="hud-title-container">
-            <span className="hud-song-counter">SONG {totalCount + 1} OF 10</span>
-            {gameType === 'decade' && (
-              <>
-                <span className="stat-label" style={{ color: '#eeddbb', fontSize: '0.52rem', marginBottom: '1px', marginTop: '2px' }}>NOW IDENTIFYING TRACK:</span>
-                <span className="hud-track-name">
-                  "{question.trackName.toUpperCase()}"
-                </span>
-              </>
-            )}
+            <span className="hud-song-counter">{totalCount + 1} out of 10</span>
           </div>
 
-          {/* PLAY CLIP Circular Stamp Overlay Button */}
-          <button 
-            className={`hotspot-play-clip ${isPlaying ? 'playing' : ''}`}
+          {/* TDK SA90 Retro Cassette Tape Play Button */}
+          <div 
+            className={`tdk-cassette-tape ${isPlaying ? 'playing' : ''}`}
             onClick={togglePlay}
+            title="Tap to Play/Pause Audio"
           >
-            <div className={`play-icon-overlay ${!hasPlayedOnce ? 'pulsate' : ''}`}>
-              {isPlaying ? (
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z"/>
-                </svg>
-              )}
+            <div className="cassette-top-strip">
+              <span className="tdk-logo">TDK</span>
+              <span className="sa90-label">SA90</span>
+              <span className="high-bias">HIGH POSITION (TYPE II)</span>
             </div>
-          </button>
 
-          {/* Prompt to Tap Play if not played yet */}
-          {!hasPlayedOnce && (
-            <div className="play-prompt" style={{ top: gameType === 'song' ? '54.5%' : '47.5%' }}>
-              ⚡ TAP STEALIE TO UNLOCK CHOICES ⚡
+            <div className="cassette-window">
+              <div className={`cassette-reel left ${isPlaying ? 'spinning' : ''}`}>
+                <div className="spoke-ring"></div>
+              </div>
+              <div className="tape-spool-bridge"></div>
+              <div className={`cassette-reel right ${isPlaying ? 'spinning' : ''}`}>
+                <div className="spoke-ring"></div>
+              </div>
             </div>
-          )}
+
+            <div className="cassette-bottom-label">
+              {isPlaying ? "▶ PLAYING CLIP..." : "⚡ TAP TAPE TO PLAY ⚡"}
+            </div>
+          </div>
 
           {/* TIMER HUD Overlay */}
           <div className="hud-timer-value">{timeLeft}</div>
@@ -1037,9 +1031,9 @@ export default function App() {
       {/* Screen 4: Leaderboard placard */}
       {screen === 'leaderboard' && (
         <div className="game-card bg-leaderboard">
-          {/* Game Title placard Overlay (toggles every 3s) */}
+          {/* Game Title placard Overlay */}
           <div className="overlay-game-title">
-            {activeLeaderboardType === 'decade' ? "NAME THE DECADE" : "NAME THE SONG"}
+            CONCERT LEADERBOARD
           </div>
 
           {/* Dynamic Scoreboard Table Overlay */}
@@ -1050,8 +1044,8 @@ export default function App() {
               <span className="overlay-score-col">SCORE</span>
             </div>
             
-            {leaderboard[activeLeaderboardType] && leaderboard[activeLeaderboardType].length > 0 ? (
-              leaderboard[activeLeaderboardType].slice(0, 10).map((item, idx) => {
+            {(leaderboard.song || leaderboard.decade || []).length > 0 ? (
+              (leaderboard.song || leaderboard.decade || []).slice(0, 10).map((item, idx) => {
                 return (
                   <div key={idx} className="overlay-row">
                     <span className="overlay-rank-col">{idx + 1}</span>
