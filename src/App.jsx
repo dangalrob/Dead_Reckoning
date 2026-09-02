@@ -548,8 +548,9 @@ export default function App() {
     if (!window.confirm("Are you sure you want to completely clear the leaderboards? This cannot be undone.")) return;
     try {
       const res = await axios.post('/api/leaderboard/clear');
-      setLeaderboard(res.data);
-      alert("Leaderboards successfully cleared!");
+      setLeaderboard({ decade: [], song: [] });
+      await fetchLeaderboard();
+      alert("Leaderboard successfully cleared!");
     } catch (err) {
       console.error(err);
       alert("Failed to clear leaderboards.");
@@ -1178,6 +1179,11 @@ export default function App() {
               </div>
             )}
           </div>
+
+          {/* Clear Leaderboard Overlay Button */}
+          <button className="clear-leaderboard-btn-overlay" onClick={clearLeaderboards}>
+            🗑️ CLEAR LEADERBOARD
+          </button>
 
           {/* Interactive Play Again placard Hotspot */}
           <button className="hotspot-leaderboard-back" onClick={returnToMainMenu}></button>

@@ -712,7 +712,7 @@ app.post('/api/leaderboard/clear', async (req, res) => {
     if (dbPool) {
       const client = await dbPool.connect();
       try {
-        await client.query(`DELETE FROM leaderboard;`);
+        await client.query(`TRUNCATE TABLE leaderboard RESTART IDENTITY;`);
       } finally {
         client.release();
       }
@@ -721,6 +721,7 @@ app.post('/api/leaderboard/clear', async (req, res) => {
     fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(emptyScores, null, 2), 'utf8');
     res.json(emptyScores);
   } catch (err) {
+    console.error("Clear leaderboard error:", err);
     res.status(500).json({ error: "Failed to reset leaderboard." });
   }
 });
