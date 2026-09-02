@@ -698,7 +698,7 @@ export default function App() {
                   onClick={() => submitGuess(choice)}
                   disabled={!hasPlayedOnce}
                 >
-                  {choice}
+                  {hasPlayedOnce ? choice : '...'}
                 </button>
               ))}
             </div>
@@ -730,46 +730,10 @@ export default function App() {
 
           {/* Single Central Parchment Content Card */}
           <div className="reveal-cardboard-details reveal-did-you-know">
-            {gameType === 'song' ? (
-              // --- Name the Song: Simple descriptive sentence with bold key details ---
-              <div className="reveal-song-sentence">
-                <strong>"{guessResult.correctSong}"</strong> was played on <strong>{(() => {
-                  if (!guessResult.showDetails || !guessResult.showDetails.date) return 'an unknown date';
-                  const parts = guessResult.showDetails.date.split('-');
-                  if (parts.length !== 3) return guessResult.showDetails.date;
-                  const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
-                  return dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                })()}</strong> in the <strong>{guessResult.showDetails ? guessResult.showDetails.venue : 'unknown venue'}</strong> in <strong>{guessResult.showDetails ? guessResult.showDetails.location : 'unknown location'}</strong>.
-              </div>
-            ) : (
-              // --- Name the Decade: Split track and live details layout ---
-              <>
-                {/* 1. Track Played Info */}
-                <div className="reveal-card-track-info">
-                  "{guessResult.correctSong || question.trackName}"
-                  <div style={{ marginTop: '2px' }}>WAS PLAYED IN THE <span className="reveal-decade-badge">{getFullDecade(guessResult.correctDecade)}</span></div>
-                </div>
-
-                <div className="reveal-divider"></div>
-
-                {/* 2. Show Recording Details (When & Where) */}
-                {guessResult.showDetails && (
-                  <div className="reveal-card-show-details">
-                    <div className="show-date">
-                      {(() => {
-                        if (!guessResult.showDetails.date) return 'Unknown Date';
-                        const parts = guessResult.showDetails.date.split('-');
-                        if (parts.length !== 3) return guessResult.showDetails.date;
-                        const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
-                        return dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                      })()}
-                    </div>
-                    <div>{guessResult.showDetails.venue}</div>
-                    <div>{guessResult.showDetails.location}</div>
-                  </div>
-                )}
-              </>
-            )}
+            {/* Song title banner */}
+            <div className="reveal-song-sentence" style={{ fontSize: '1.05rem', textAlign: 'center', margin: '0.4rem 0' }}>
+              <strong>"{guessResult.correctSong}"</strong>
+            </div>
 
             <div className="reveal-divider"></div>
 
@@ -807,27 +771,42 @@ export default function App() {
       {/* Screen: Grand Finale Year Bonus Round */}
       {screen === 'year_bonus' && (
         <div className="game-card bg-reveal">
-          <div className="reveal-center-card">
-            <div style={{ fontFamily: 'Sancreek, serif', fontSize: '0.85rem', color: '#ffd54f', textShadow: '1px 1px 2px #000', marginBottom: '0.3rem' }}>
-              ⚡ GRAND FINALE ⚡
+          <div className="reveal-center-card" style={{ width: '84%', top: '44%' }}>
+            <div style={{ fontFamily: 'Sancreek, serif', fontSize: '0.85rem', color: '#ffd54f', textShadow: '1px 1px 2px #000', marginBottom: '0.2rem' }}>
+              ⚡ BONUS ROUND ⚡
             </div>
             
-            <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 'bold', fontSize: '0.72rem', color: '#eeddbb', marginBottom: '0.8rem' }}>
-              WHAT YEAR WAS THIS CONCERT PLAYED?
+            <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 'bold', fontSize: '0.58rem', color: '#eeddbb', marginBottom: '0.4rem' }}>
+              SCORE: <span style={{ color: '#ffd54f' }}>{score} PTS</span> • <span style={{ color: '#a5d6a7' }}>{correctCount} OF 10 CORRECT</span>
+            </div>
+
+            {/* REVEAL CONCERT VENUE & LOCATION HERE */}
+            <div style={{ background: 'rgba(11, 2, 6, 0.7)', border: '1px solid #c29b53', borderRadius: '6px', padding: '0.35rem', marginBottom: '0.6rem', textAlign: 'center' }}>
+              <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 900, fontSize: '0.72rem', color: '#ffd54f' }}>
+                {yearGuessResult && yearGuessResult.show ? yearGuessResult.show.venue : (question && question.showDetails ? question.showDetails.venue : 'HISTORIC GRATEFUL DEAD CONCERT')}
+              </div>
+              <div style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.56rem', color: '#eeddbb' }}>
+                {yearGuessResult && yearGuessResult.show ? `${yearGuessResult.show.city}, ${yearGuessResult.show.state}` : (question && question.showDetails ? question.showDetails.location : '')}
+              </div>
             </div>
 
             {!yearGuessResult ? (
-              <div className="year-choices-grid">
-                {yearChoices.map((year, idx) => (
-                  <button 
-                    key={idx} 
-                    className="year-choice-btn"
-                    onClick={() => submitYearGuess(year)}
-                  >
-                    {year}
-                  </button>
-                ))}
-              </div>
+              <>
+                <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 'bold', fontSize: '0.62rem', color: '#eeddbb', marginBottom: '0.4rem' }}>
+                  GUESS THE YEAR OF THIS SHOW FOR +500 PTS:
+                </div>
+                <div className="year-choices-grid">
+                  {yearChoices.map((year, idx) => (
+                    <button 
+                      key={idx} 
+                      className="year-choice-btn"
+                      onClick={() => submitYearGuess(year)}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </>
             ) : (
               <div className="year-result-container">
                 {yearGuessResult.correct ? (
@@ -839,10 +818,35 @@ export default function App() {
                     CONCERT WAS PLAYED IN {yearGuessResult.correctYear}
                   </div>
                 )}
-                
-                <div style={{ fontSize: '0.62rem', color: '#eeddbb', marginTop: '0.6rem', opacity: 0.9 }}>
-                  {yearGuessResult.show ? `${yearGuessResult.show.venue} (${yearGuessResult.show.city}, ${yearGuessResult.show.state})` : ''}
-                </div>
+
+                {/* Leaderboard Name Entry */}
+                {!scoreSaved && score > 0 ? (
+                  <div style={{ marginTop: '0.5rem', background: 'rgba(11, 2, 6, 0.8)', padding: '0.4rem', borderRadius: '6px', border: '1px solid #c29b53' }}>
+                    <div style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.54rem', color: '#eeddbb', marginBottom: '0.25rem', fontWeight: 'bold' }}>
+                      ENTER YOUR NAME FOR LEADERBOARD:
+                    </div>
+                    <input 
+                      type="text" 
+                      maxLength="10"
+                      className="gameover-name-input"
+                      style={{ fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center', width: '80%' }}
+                      placeholder="YOUR NAME"
+                      value={playerInitials}
+                      onChange={e => setPlayerInitials(e.target.value.toUpperCase())}
+                    />
+                    <button 
+                      className="year-choice-btn" 
+                      style={{ marginTop: '0.35rem', padding: '0.25rem 0.6rem', fontSize: '0.65rem', width: '80%' }} 
+                      onClick={submitHighScore}
+                    >
+                      SUBMIT SCORE
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ color: '#a5d6a7', fontSize: '0.58rem', marginTop: '0.4rem', fontWeight: 'bold' }}>
+                    {scoreSaved ? "✓ SCORE SAVED TO LEADERBOARD!" : ""}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -905,11 +909,11 @@ export default function App() {
           <div className="rules-content-card">
             <div className="rules-title">TOUR RULES</div>
             <div className="rules-section">
-              <div className="rules-item">1. TAP THE STEALIE TO PLAY THE LIVE AUDIO CLIP (10S LIMIT).</div>
+              <div className="rules-item">1. TEN SONGS FROM A RANDOM CONCERT ARE PLAYED ONE AT A TIME.</div>
               <div className="rules-item">2. CHOOSE THE CORRECT SONG NAME FROM THE 4 OPTIONS.</div>
-              <div className="rules-item">3. GUESS QUICKLY TO EARN UP TO +40 SPEED BONUS POINTS.</div>
-              <div className="rules-item">4. WRONG GUESSES DEDUCT A 50 POINT PENALTY AND RESET STREAK.</div>
-              <div className="rules-item">5. COMPLETE 10 SONGS WITH LIVES REMAINING TO CONQUER THE TOUR!</div>
+              <div className="rules-item">3. WRONG GUESSES OR TIMEOUTS DEDUCT 50 PTS & 1 STRIKE. 3 STRIKES ENDS THE GAME.</div>
+              <div className="rules-item">4. GUESS QUICKLY TO EARN UP TO +40 SPEED BONUS POINTS.</div>
+              <div className="rules-item">5. COMPLETE 10 SONGS TO UNLOCK THE BONUS ROUND & GUESS THE YEAR (+500 PTS)!</div>
             </div>
             
             <div className="ranks-title">TOUR RANKS</div>
@@ -928,7 +932,7 @@ export default function App() {
         <div className="game-card bg-gameover">
           <div className="gameover-dark-card">
             <div className="gameover-status-title">
-              {lives === 0 ? "TOUR STRIKE OUT" : "TOUR COMPLETE"}
+              {lives === 0 ? "BETTER LUCK NEXT TIME" : "TOUR COMPLETE"}
             </div>
             
             <div className="gameover-results-breakdown">
