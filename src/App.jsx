@@ -598,16 +598,16 @@ export default function App() {
           {/* Buttons with dynamic text overlays */}
           <button 
             className="hotspot-decade" 
-            onClick={() => startConcertSession('archive')}
+            onClick={() => startConcertSession('daily')}
           >
-            NAME THE SONG GAME
+            🌟 DAILY SHOW CHALLENGE
           </button>
           
           <button 
             className="hotspot-song" 
-            onClick={() => startConcertSession('daily')}
+            onClick={() => startConcertSession('archive')}
           >
-            🌟 DAILY SHOW CHALLENGE
+            🎸 ARCHIVE RANDOM SHOW
           </button>
           
           <button 
