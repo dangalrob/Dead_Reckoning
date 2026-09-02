@@ -598,18 +598,16 @@ export default function App() {
           {/* Buttons with dynamic text overlays */}
           <button 
             className="hotspot-decade" 
-            onClick={() => startConcertSession('daily')}
+            onClick={() => startConcertSession('archive')}
           >
-            🌟 TODAY'S TOUR CONCERT
-            <span style={{ display: 'block', fontSize: '0.40rem', textTransform: 'uppercase', marginTop: '2px', opacity: 0.85, letterSpacing: '0.5px', color: '#ffd54f' }}>DAILY CHALLENGE</span>
+            NAME THE SONG GAME
           </button>
           
           <button 
             className="hotspot-song" 
-            onClick={() => startConcertSession('archive')}
+            onClick={() => startConcertSession('daily')}
           >
-            🎸 ARCHIVE TOUR CONCERT
-            <span style={{ display: 'block', fontSize: '0.40rem', textTransform: 'uppercase', marginTop: '2px', opacity: 0.85, letterSpacing: '0.5px' }}>RANDOM SHOW MODE</span>
+            🌟 DAILY SHOW CHALLENGE
           </button>
           
           <button 
@@ -618,7 +616,7 @@ export default function App() {
               setScreen('leaderboard');
             }}
           >
-            View Leaderboard
+            VIEW LEADERBOARD
           </button>
           
           <button 
@@ -627,7 +625,7 @@ export default function App() {
               setScreen('rules');
             }}
           >
-            Tour Rules & Ranks
+            📜 RULES & RANKS
           </button>
         </div>
       )}

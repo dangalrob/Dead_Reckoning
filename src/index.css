@@ -159,12 +159,12 @@ body {
 
 .hotspot-rules {
   position: absolute;
-  top: 91.9%;
-  left: 22.2%;
-  width: 55.6%;
-  height: 5.5%;
-  background: transparent;
-  border: 1.5px solid rgba(238, 221, 187, 0.12);
+  top: 91.5%;
+  left: 20.0%;
+  width: 60.0%;
+  height: 5.8%;
+  background: rgba(26, 6, 13, 0.88);
+  border: 2px solid #ffd54f;
   cursor: pointer;
   border-radius: 8px;
   transition: all 0.2s ease-in-out;
@@ -172,12 +172,14 @@ body {
   justify-content: center;
   align-items: center;
   font-family: 'Outfit', 'Georgia', serif;
-  font-weight: 800;
-  font-size: 0.55rem;
-  color: #2b0f1a;
+  font-weight: 900;
+  font-size: 0.72rem;
+  color: #ffd54f;
+  text-shadow: 1px 1px 3px #000, 0 0 8px rgba(0,0,0,0.9);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   z-index: 10;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.6);
 }
 
 .hotspot-decade:hover, .hotspot-song:hover, .hotspot-leaderboard:hover {
@@ -188,9 +190,11 @@ body {
 }
 
 .hotspot-rules:hover {
-  border-color: rgba(238, 221, 187, 0.95);
-  background-color: rgba(238, 221, 187, 0.15);
-  box-shadow: 0 0 8px rgba(238, 221, 187, 0.5);
+  border-color: #fff;
+  background-color: var(--crimson);
+  color: #fff;
+  box-shadow: 0 0 14px rgba(255, 213, 79, 0.8);
+  transform: scale(1.03);
 }
 
 .hotspot-decade:active, .hotspot-song:active, .hotspot-leaderboard:active, .hotspot-rules:active {
