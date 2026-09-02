@@ -714,9 +714,9 @@ export default function App() {
               <span className="label-checkboxes">☐ ON ☐ OFF</span>
             </div>
 
-            {/* Clear Tape Window & White Reels */}
+            {/* Clear Tape Window & White Reels with Magnetic Tape Spools */}
             <div className="cassette-window-frame">
-              <div className={`cassette-reel left ${isPlaying ? 'spinning' : ''}`}>
+              <div className={`tape-spool-outer left ${isPlaying ? 'spinning' : ''}`}>
                 <div className="white-spoke-hub">
                   <div className="hub-teeth"></div>
                 </div>
@@ -725,7 +725,7 @@ export default function App() {
               {/* Tape Spool Bridge */}
               <div className="tape-spool-bridge"></div>
 
-              <div className={`cassette-reel right ${isPlaying ? 'spinning' : ''}`}>
+              <div className={`tape-spool-outer right ${isPlaying ? 'spinning' : ''}`}>
                 <div className="white-spoke-hub">
                   <div className="hub-teeth"></div>
                 </div>

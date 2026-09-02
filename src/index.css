@@ -403,36 +403,52 @@ body {
   opacity: 0.95;
 }
 
-/* White 6-Spoke Reel Hub */
-.cassette-reel {
-  width: 38px;
-  height: 38px;
-  background: radial-gradient(circle, #ffffff 40%, #e0e0e0 60%, #180f0a 65%);
-  border: 2px solid #ffffff;
+/* Dark Magnetic Tape Spools (wound around reels) */
+.tape-spool-outer {
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
+  background: radial-gradient(circle, #482a1d 0%, #281710 65%, #180b06 100%);
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: relative;
   z-index: 2;
-  box-shadow: 0 0 6px rgba(0,0,0,0.9);
+  border: 1px solid #1a0d07;
 }
 
+.tape-spool-outer.spinning {
+  animation: spinCassetteReel 1.4s linear infinite;
+}
+
+@keyframes spinCassetteReel {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* White 6-Spoke Hub inside Magnetic Tape Spool */
 .white-spoke-hub {
-  width: 100%;
-  height: 100%;
+  width: 32px;
+  height: 32px;
+  background: radial-gradient(circle, #ffffff 45%, #e8e8e8 70%, #d0d0d0 100%);
+  border: 1.5px solid #ffffff;
   border-radius: 50%;
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
+  box-shadow: 0 0 4px rgba(0,0,0,0.8);
 }
 
 .white-spoke-hub::before {
   content: '';
   position: absolute;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   background: #121819;
   border-radius: 50%;
-  border: 2px solid #fff;
+  border: 1.5px solid #fff;
   z-index: 3;
 }
 
@@ -445,24 +461,15 @@ body {
 .hub-teeth::before, .hub-teeth::after {
   content: '';
   position: absolute;
-  background: #fff;
+  background: #ffffff;
 }
 
 .hub-teeth::before {
-  top: 4px; bottom: 4px; left: 16px; width: 6px;
+  top: 3px; bottom: 3px; left: 13.5px; width: 5px;
 }
 
 .hub-teeth::after {
-  left: 4px; right: 4px; top: 16px; height: 6px;
-}
-
-.cassette-reel.spinning {
-  animation: spinCassetteReel 1.4s linear infinite;
-}
-
-@keyframes spinCassetteReel {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  left: 3px; right: 3px; top: 13.5px; height: 5px;
 }
 
 /* Gold Print at Bottom */
