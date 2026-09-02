@@ -695,31 +695,64 @@ export default function App() {
             <span className="hud-song-counter">{totalCount + 1} out of 10</span>
           </div>
 
-          {/* TDK SA90 Retro Cassette Tape Play Button */}
+          {/* TDK SA90 Authentic Grateful Dead Cassette Tape Play Button */}
           <div 
             className={`tdk-cassette-tape ${isPlaying ? 'playing' : ''}`}
             onClick={togglePlay}
             title="Tap to Play/Pause Audio"
           >
-            <div className="cassette-top-strip">
-              <span className="tdk-logo">TDK</span>
-              <span className="sa90-label">SA90</span>
-              <span className="high-bias">HIGH POSITION (TYPE II)</span>
+            {/* Corner Screws */}
+            <div className="screw top-left">⊕</div>
+            <div className="screw top-right">⊕</div>
+
+            {/* Handwritten Paper J-Card Spine Label */}
+            <div className="cassette-paper-label">
+              <span className="side-letter">A</span>
+              <span className="handwritten-title">
+                {isPlaying ? "▶ PLAYING DEAD TAPE..." : "⚡ GRATEFUL DEAD: LIVE TAPE"}
+              </span>
+              <span className="label-checkboxes">☐ ON ☐ OFF</span>
             </div>
 
-            <div className="cassette-window">
+            {/* Clear Tape Window & White Reels */}
+            <div className="cassette-window-frame">
               <div className={`cassette-reel left ${isPlaying ? 'spinning' : ''}`}>
-                <div className="spoke-ring"></div>
+                <div className="white-spoke-hub">
+                  <div className="hub-teeth"></div>
+                </div>
               </div>
+
+              {/* Tape Spool Bridge */}
               <div className="tape-spool-bridge"></div>
+
               <div className={`cassette-reel right ${isPlaying ? 'spinning' : ''}`}>
-                <div className="spoke-ring"></div>
+                <div className="white-spoke-hub">
+                  <div className="hub-teeth"></div>
+                </div>
               </div>
             </div>
 
-            <div className="cassette-bottom-label">
-              {isPlaying ? "▶ PLAYING CLIP..." : "⚡ TAP TAPE TO PLAY ⚡"}
+            {/* Bottom Gold Printing */}
+            <div className="cassette-gold-print">
+              <div className="tdk-logo-group">
+                <span className="tdk-emblem">❖</span>
+                <span className="tdk-text">TDK</span>
+              </div>
+              <span className="type-ii-text">IEC II / TYPE II  HIGH POSITION</span>
+              <span className="sa90-text">SA 90</span>
             </div>
+
+            {/* Bottom Trapezoid Housing */}
+            <div className="cassette-trapezoid-housing">
+              <div className="housing-hole"></div>
+              <div className="housing-hole"></div>
+              <div className="housing-hole"></div>
+              <div className="housing-hole"></div>
+            </div>
+
+            {/* Bottom Corner Screws */}
+            <div className="screw bottom-left">⊕</div>
+            <div className="screw bottom-right">⊕</div>
           </div>
 
           {/* TIMER HUD Overlay */}

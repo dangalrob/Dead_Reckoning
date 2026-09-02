@@ -288,101 +288,172 @@ body {
   letter-spacing: 1.5px;
 }
 
-/* TDK SA90 Retro Cassette Tape Play Button */
+/* TDK SA90 Authentic Grateful Dead Cassette Tape Play Button */
 .tdk-cassette-tape {
   position: absolute;
-  top: 42.0%;
-  left: 14.0%;
-  width: 72.0%;
-  height: 27.0%;
-  background: linear-gradient(135deg, #1c1a17 0%, #2b2722 50%, #151311 100%);
-  border: 2.5px solid #c29b53;
-  border-radius: 8px;
+  top: 41.5%;
+  left: 12.5%;
+  width: 75.0%;
+  height: 28.5%;
+  background: radial-gradient(circle at center, #2d3536 0%, #171c1d 70%, #0d1011 100%);
+  border: 2px solid #3c4648;
+  border-radius: 10px;
   cursor: pointer;
   z-index: 10;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.8), inset 0 0 10px rgba(0,0,0,0.9);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.9), inset 0 0 12px rgba(0,0,0,0.8);
   display: flex;
   flex-direction: column;
-  padding: 5px;
+  padding: 6px 8px;
   box-sizing: border-box;
   transition: all 0.2s ease-in-out;
+  user-select: none;
 }
 
 .tdk-cassette-tape:hover {
   border-color: #ffd54f;
-  box-shadow: 0 0 16px rgba(255, 213, 79, 0.7), inset 0 0 12px rgba(255, 213, 79, 0.2);
+  box-shadow: 0 0 18px rgba(255, 213, 79, 0.6), inset 0 0 10px rgba(255, 213, 79, 0.15);
   transform: scale(1.02);
 }
 
 .tdk-cassette-tape.playing {
-  border-color: #ff9800;
-  box-shadow: 0 0 20px rgba(255, 152, 0, 0.8), inset 0 0 12px rgba(255, 152, 0, 0.3);
+  border-color: #4caf50;
+  box-shadow: 0 0 22px rgba(76, 175, 80, 0.7), inset 0 0 14px rgba(76, 175, 80, 0.2);
 }
 
-.cassette-top-strip {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #c29b53;
-  color: #1a060d;
+/* Corner Screws */
+.screw {
+  position: absolute;
+  font-size: 0.48rem;
+  color: #5a6668;
+  opacity: 0.8;
+  line-height: 1;
+}
+.screw.top-left { top: 3px; left: 4px; }
+.screw.top-right { top: 3px; right: 4px; }
+.screw.bottom-left { bottom: 3px; left: 4px; }
+.screw.bottom-right { bottom: 3px; right: 4px; }
+
+/* Handwritten Paper Label */
+.cassette-paper-label {
+  background: #f4efe4;
+  border: 1px solid #d4cebe;
+  border-radius: 3px;
   padding: 2px 6px;
-  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
+  color: #15317e; /* Classic blue ballpoint pen ink color */
+  margin-bottom: 4px;
+}
+
+.side-letter {
   font-family: 'Outfit', sans-serif;
   font-weight: 900;
+  font-size: 0.68rem;
+  color: #222;
+  margin-right: 4px;
 }
 
-.tdk-logo {
-  font-size: 0.78rem;
-  letter-spacing: 1px;
-}
-
-.sa90-label {
-  font-size: 0.72rem;
-  color: #8e0000;
-  font-weight: 900;
-}
-
-.high-bias {
-  font-size: 0.42rem;
-  letter-spacing: 0.5px;
-  opacity: 0.9;
-}
-
-.cassette-window {
+.handwritten-title {
+  font-family: 'Comic Sans MS', 'Caveat', cursive, sans-serif;
+  font-weight: bold;
+  font-size: 0.62rem;
+  color: #123499;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   flex: 1;
-  background: rgba(10, 5, 8, 0.85);
-  border: 1.5px solid rgba(238, 221, 187, 0.4);
-  border-radius: 6px;
-  margin: 4px 0;
+  text-align: center;
+}
+
+.label-checkboxes {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.38rem;
+  color: #666;
+  letter-spacing: 0.3px;
+}
+
+/* Clear Glass Tape Window Frame */
+.cassette-window-frame {
+  flex: 1;
+  background: rgba(15, 20, 22, 0.92);
+  border: 1.5px solid #4a5658;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 0 10px;
+  padding: 0 12px;
   position: relative;
   overflow: hidden;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.95);
 }
 
-.cassette-tape-bar {
+.tape-spool-bridge {
   position: absolute;
   top: 50%;
-  left: 20%;
-  right: 20%;
-  height: 10px;
-  margin-top: -5px;
-  background: #3a2212;
-  border-radius: 3px;
+  left: 18%;
+  right: 18%;
+  height: 12px;
+  margin-top: -6px;
+  background: linear-gradient(to bottom, #2a1b12, #180f0a);
+  border-radius: 2px;
   z-index: 1;
+  opacity: 0.95;
 }
 
+/* White 6-Spoke Reel Hub */
 .cassette-reel {
-  width: 36px;
-  height: 36px;
-  background: radial-gradient(circle, #fff 25%, #c29b53 30%, #3a2510 70%);
-  border: 2px solid #fff;
+  width: 38px;
+  height: 38px;
+  background: radial-gradient(circle, #ffffff 40%, #e0e0e0 60%, #180f0a 65%);
+  border: 2px solid #ffffff;
   border-radius: 50%;
   position: relative;
   z-index: 2;
-  box-shadow: 0 0 5px rgba(0,0,0,0.8);
+  box-shadow: 0 0 6px rgba(0,0,0,0.9);
+}
+
+.white-spoke-hub {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.white-spoke-hub::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: #121819;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  z-index: 3;
+}
+
+.hub-teeth {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.hub-teeth::before, .hub-teeth::after {
+  content: '';
+  position: absolute;
+  background: #fff;
+}
+
+.hub-teeth::before {
+  top: 4px; bottom: 4px; left: 16px; width: 6px;
+}
+
+.hub-teeth::after {
+  left: 4px; right: 4px; top: 16px; height: 6px;
 }
 
 .cassette-reel.spinning {
@@ -394,34 +465,64 @@ body {
   100% { transform: rotate(360deg); }
 }
 
-.spoke-ring {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-.spoke-ring::before, .spoke-ring::after {
-  content: '';
-  position: absolute;
-  background: #1a060d;
-}
-
-.spoke-ring::before {
-  top: 3px; bottom: 3px; left: 15px; width: 6px;
-}
-
-.spoke-ring::after {
-  left: 3px; right: 3px; top: 15px; height: 6px;
-}
-
-.cassette-bottom-label {
+/* Gold Print at Bottom */
+.cassette-gold-print {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 4px 1px 4px;
+  color: #d4af37;
   font-family: 'Outfit', sans-serif;
   font-weight: 800;
-  font-size: 0.52rem;
-  color: #ffd54f;
-  text-align: center;
   letter-spacing: 0.5px;
-  text-shadow: 1px 1px 2px #000;
+}
+
+.tdk-logo-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.tdk-emblem {
+  font-size: 0.52rem;
+}
+
+.tdk-text {
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.type-ii-text {
+  font-size: 0.38rem;
+  letter-spacing: 0.4px;
+  color: #c5a028;
+}
+
+.sa90-text {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+/* Trapezoid Bottom Housing */
+.cassette-trapezoid-housing {
+  height: 10px;
+  background: #171c1d;
+  border-top: 1px solid #3c4648;
+  margin-top: 1px;
+  clip-path: polygon(6% 0%, 94% 0%, 100% 100%, 0% 100%);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 15px;
+}
+
+.housing-hole {
+  width: 5px;
+  height: 5px;
+  background: #000;
+  border-radius: 50%;
+  border: 1px solid #3c4648;
 }
 
 .hud-timer-value {
