@@ -470,7 +470,7 @@ app.post('/api/game/start-session', async (req, res) => {
 
     const sessionTracks = validTracks.slice(0, 10).map(t => {
       const cleanTitle = t.title.replace(/->/g, '').replace(/ live/gi, '').trim();
-      const distractors = ALL_DEAD_SONGS
+      const distractors = CLASSIC_GD_SONGS
         .filter(s => s.toLowerCase() !== cleanTitle.toLowerCase())
         .sort(() => 0.5 - Math.random())
         .slice(0, 3);
