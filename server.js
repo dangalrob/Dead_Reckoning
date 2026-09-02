@@ -83,21 +83,14 @@ const activeGames = {};
 // Path to leaderboard storage
 const LEADERBOARD_FILE = path.join(__dirname, 'data', 'leaderboard.json');
 
-// Initialize leaderboard file if it doesn't exist
+// Initialize leaderboard file if it doesn't exist (starts completely empty)
 if (!fs.existsSync(path.dirname(LEADERBOARD_FILE))) {
   fs.mkdirSync(path.dirname(LEADERBOARD_FILE), { recursive: true });
 }
 if (!fs.existsSync(LEADERBOARD_FILE)) {
   fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify({
-    decade: [
-      { name: "JGB", score: 850, difficulty: "medium", date: "2026-08-28" },
-      { name: "GDH", score: 720, difficulty: "expert", date: "2026-08-28" },
-      { name: "CHR", score: 540, difficulty: "easy", date: "2026-08-28" }
-    ],
-    song: [
-      { name: "JGB", score: 620, difficulty: "medium", date: "2026-08-28" },
-      { name: "GDH", score: 500, difficulty: "expert", date: "2026-08-28" }
-    ]
+    decade: [],
+    song: []
   }, null, 2));
 }
 
