@@ -420,8 +420,28 @@ function getDailyShow() {
 
 // Endpoint: Start a Concert Tour Game Session (10 clips from 1 show)
 app.post('/api/game/start-session', async (req, res) => {
-  const { mode = 'daily' } = req.body;
+  const { mode = 'daily', deviceId, deviceMeta } = req.body;
   const shows = loadShowsData();
+
+  if (deviceId && dbPool) {
+    try {
+      const client = await dbPool.connect();
+      try {
+        await client.query(`
+          INSERT INTO users (device_id, games_started, device_meta, first_seen, last_seen)
+          VALUES ($1, 1, $2, NOW(), NOW())
+          ON CONFLICT (device_id) DO UPDATE
+          SET games_started = users.games_started + 1,
+              device_meta = COALESCE($2, users.device_meta),
+              last_seen = NOW();
+        `, [deviceId, JSON.stringify(deviceMeta || {})]);
+      } finally {
+        client.release();
+      }
+    } catch (e) {
+      console.warn("User session logging error:", e.message);
+    }
+  }
 
   let selectedShow = null;
   if (mode === 'daily') {
@@ -794,19 +814,20 @@ app.get('/api/admin/device-report', async (req, res) => {
     if (dbPool) {
       const queryText = `
         SELECT 
-          u.device_id,
-          u.latest_name,
-          u.games_started,
+          COALESCE(u.device_id, l.device_id) AS device_id,
+          COALESCE(u.latest_name, MAX(l.name), 'NO NAME ADDED') AS latest_name,
+          COALESCE(u.games_started, 1) AS games_started,
           u.device_meta,
-          u.first_seen,
-          u.last_seen,
+          COALESCE(u.first_seen, MIN(l.created_at), NOW()) AS first_seen,
+          COALESCE(u.last_seen, MAX(l.created_at), NOW()) AS last_seen,
           ARRAY_AGG(DISTINCT l.name) FILTER (WHERE l.name IS NOT NULL) AS names_used,
           COUNT(l.id) AS scores_submitted,
-          MAX(l.score) AS highest_score
+          COALESCE(MAX(l.score), 0) AS highest_score
         FROM users u
-        LEFT JOIN leaderboard l ON u.device_id = l.device_id
-        GROUP BY u.device_id, u.latest_name, u.games_started, u.device_meta, u.first_seen, u.last_seen
-        ORDER BY u.last_seen DESC;
+        FULL OUTER JOIN leaderboard l ON u.device_id = l.device_id
+        WHERE COALESCE(u.device_id, l.device_id) IS NOT NULL
+        GROUP BY COALESCE(u.device_id, l.device_id), u.latest_name, u.games_started, u.device_meta, u.first_seen, u.last_seen
+        ORDER BY last_seen DESC;
       `;
       const result = await dbPool.query(queryText);
       const report = result.rows.map(row => {

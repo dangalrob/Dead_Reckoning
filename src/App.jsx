@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { getDeviceId, pingUserActivity } from './utils/device.js';
+import { getDeviceId, getDeviceMetadata, pingUserActivity } from './utils/device.js';
 import { 
   DancingBear, 
   StealieEmblem, 
@@ -254,7 +254,9 @@ export default function App() {
     setSessionMode(mode);
 
     try {
-      const res = await axios.post('/api/game/start-session', { mode, gameType: 'song' });
+      const deviceId = getDeviceId();
+      const deviceMeta = getDeviceMetadata();
+      const res = await axios.post('/api/game/start-session', { mode, gameType: 'song', deviceId, deviceMeta });
       setSessionId(res.data.sessionId);
       setYearChoices(res.data.yearChoices || []);
       await loadSessionTrack(res.data.sessionId, 0);
