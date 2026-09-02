@@ -397,25 +397,24 @@ export default function App() {
       setIsPlaying(false);
     }
 
-    try {
-      const res = await axios.post('/api/game/guess', {
-        gameId: question.gameId,
-        guess: guessVal
-      });
+    // Handle Concert Tour session tracks
+    if (sessionId && question && question.trackName) {
+      const isCorrect = guessVal !== 'timeout' && (guessVal.trim().toLowerCase() === question.trackName.trim().toLowerCase());
+      const result = {
+        correct: isCorrect,
+        correctSong: question.trackName,
+        correctDecade: '70s'
+      };
 
-      const result = res.data;
       setGuessResult(result);
       setTotalCount(prev => prev + 1);
 
-      if (result.correct) {
+      if (isCorrect) {
         const basePoints = 100;
         const streakBonus = Math.min(streak * 20, 100);
-        
-        // Speed bonus calculation (medium multiplier scaling)
         const speedBonusMultiplier = 4;
         const speedBonus = guessVal === 'timeout' ? 0 : timeLeft * speedBonusMultiplier;
-        
-        const earned = (basePoints + streakBonus + speedBonus);
+        const earned = basePoints + streakBonus + speedBonus;
 
         setLastPointsEarned(earned);
         setLastSpeedBonus(speedBonus);
@@ -426,7 +425,6 @@ export default function App() {
       } else {
         setStreak(0);
         setLives(prev => prev - 1);
-        // Penalty: deduct 50 points for incorrect guess, floor at 0
         const penalty = 50;
         setScore(prev => Math.max(0, prev - penalty));
         setLastPointsEarned(-penalty);
@@ -434,9 +432,48 @@ export default function App() {
       }
 
       setScreen('reveal');
-    } catch (err) {
-      alert("Error submitting guess. Please try again.");
-      console.error(err);
+      return;
+    }
+
+    // Fallback for legacy standalone questions
+    if (question && question.gameId) {
+      try {
+        const res = await axios.post('/api/game/guess', {
+          gameId: question.gameId,
+          guess: guessVal
+        });
+
+        const result = res.data;
+        setGuessResult(result);
+        setTotalCount(prev => prev + 1);
+
+        if (result.correct) {
+          const basePoints = 100;
+          const streakBonus = Math.min(streak * 20, 100);
+          const speedBonusMultiplier = 4;
+          const speedBonus = guessVal === 'timeout' ? 0 : timeLeft * speedBonusMultiplier;
+          const earned = basePoints + streakBonus + speedBonus;
+
+          setLastPointsEarned(earned);
+          setLastSpeedBonus(speedBonus);
+          setLastStreakBonus(streakBonus);
+          setScore(prev => prev + earned);
+          setStreak(prev => prev + 1);
+          setCorrectCount(prev => prev + 1);
+        } else {
+          setStreak(0);
+          setLives(prev => prev - 1);
+          const penalty = 50;
+          setScore(prev => Math.max(0, prev - penalty));
+          setLastPointsEarned(-penalty);
+          setLastSpeedBonus(0);
+        }
+
+        setScreen('reveal');
+      } catch (err) {
+        alert("Error submitting guess. Please try again.");
+        console.error(err);
+      }
     }
   };
 
