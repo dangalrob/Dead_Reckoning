@@ -621,15 +621,19 @@ export default function App() {
     return "easy"; // JKD
   };
 
-  // Clear leaderboard reset action
+  // Clear leaderboard reset action (Preserves Device Audit telemetry)
   const clearLeaderboards = async () => {
     setMenuOpen(false);
-    if (!window.confirm("Are you sure you want to completely clear the leaderboards? This cannot be undone.")) return;
+    if (!window.confirm("Are you sure you want to clear the public Leaderboard scores? (Device Audit logs will be preserved).")) return;
     try {
-      const res = await axios.post('/api/leaderboard/clear');
+      await axios.post('/api/leaderboard/clear');
       setLeaderboard({ decade: [], song: [] });
       await fetchLeaderboard();
-      alert("Leaderboard successfully cleared!");
+      if (auditModalOpen) {
+        const res = await axios.get('/api/admin/device-report');
+        setAuditReport(res.data);
+      }
+      alert("Leaderboard cleared! (Device Audit records preserved).");
     } catch (err) {
       console.error(err);
       alert("Failed to clear leaderboards.");
@@ -767,9 +771,9 @@ export default function App() {
             </button>
             {menuOpen && (
               <div className="menu-hamburger-dropdown">
-                <button className="menu-dropdown-item" onClick={clearLeaderboards}>
-                  Clear Leaderboard ⚡
-                </button>
+                <div className="menu-dropdown-item inert">
+                  Free Pipeline
+                </div>
               </div>
             )}
           </div>
@@ -1382,6 +1386,13 @@ export default function App() {
                     </div>
                   ))
               )}
+            </div>
+
+            {/* Modal Footer with Leaderboard Reset Action */}
+            <div className="audit-modal-footer">
+              <button className="audit-clear-leaderboard-btn" onClick={clearLeaderboards}>
+                🗑️ CLEAR LEADERBOARD (Preserves Audit Logs)
+              </button>
             </div>
           </div>
         </div>

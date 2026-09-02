@@ -2100,6 +2100,49 @@ body {
   border: 1px solid rgba(238, 221, 187, 0.2);
 }
 
+.audit-modal-footer {
+  padding: 10px 14px;
+  border-top: 1px solid rgba(238, 221, 187, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #1a060d;
+  flex-shrink: 0;
+}
+
+.audit-clear-leaderboard-btn {
+  background: linear-gradient(135deg, #d90429 0%, #ef233c 100%);
+  color: #ffffff;
+  border: 1px solid #ff4d6d;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 0.65rem;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(217, 4, 41, 0.4);
+  transition: all 0.2s ease;
+}
+
+.audit-clear-leaderboard-btn:hover {
+  background: linear-gradient(135deg, #ef233c 0%, #ff4d6d 100%);
+  transform: scale(1.02);
+  box-shadow: 0 6px 16px rgba(217, 4, 41, 0.6);
+}
+
+.menu-dropdown-item.inert {
+  cursor: default;
+  color: #eeddbb;
+  opacity: 0.85;
+  user-select: none;
+}
+.menu-dropdown-item.inert:hover {
+  background-color: transparent;
+  color: #eeddbb;
+  text-shadow: none;
+}
+
 /* Year Bonus Round Layout & Choice Grid */
 .year-choices-grid {
   display: grid;
