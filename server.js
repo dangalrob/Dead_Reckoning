@@ -737,24 +737,21 @@ app.post('/api/user/activity', async (req, res) => {
 app.get('/api/game/leaderboard', async (req, res) => {
   try {
     if (dbPool) {
-      const decadeQuery = await dbPool.query(
-        `SELECT name, score, difficulty, created_at::text as date FROM leaderboard WHERE game_type = 'decade' ORDER BY score DESC LIMIT 10;`
-      );
-      const songQuery = await dbPool.query(
-        `SELECT name, score, difficulty, created_at::text as date FROM leaderboard WHERE game_type = 'song' ORDER BY score DESC LIMIT 10;`
+      const allQuery = await dbPool.query(
+        `SELECT name, score, difficulty, created_at::text as date FROM leaderboard ORDER BY score DESC LIMIT 10;`
       );
       return res.json({
-        decade: decadeQuery.rows,
-        song: songQuery.rows
+        decade: allQuery.rows,
+        song: allQuery.rows
       });
     }
 
     const scores = loadLeaderboardData();
-    scores.decade.sort((a, b) => b.score - a.score);
-    scores.song.sort((a, b) => b.score - a.score);
+    const combined = [...(scores.song || []), ...(scores.decade || [])].sort((a, b) => b.score - a.score);
+    const topScores = combined.slice(0, 10);
     res.json({
-      decade: scores.decade.slice(0, 10),
-      song: scores.song.slice(0, 10)
+      decade: topScores,
+      song: topScores
     });
   } catch (err) {
     console.error("Leaderboard fetch error:", err);

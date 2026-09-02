@@ -142,7 +142,7 @@ export default function App() {
   const [lastSpeedBonus, setLastSpeedBonus] = useState(0);
   const [lastStreakBonus, setLastStreakBonus] = useState(0);
   const [leaderboard, setLeaderboard] = useState({ decade: [], song: [] });
-  const [activeLeaderboardType, setActiveLeaderboardType] = useState('decade');
+  const [activeLeaderboardType, setActiveLeaderboardType] = useState('song');
   const [playerInitials, setPlayerInitials] = useState(() => {
     return localStorage.getItem('dr_player_name') || '';
   });
@@ -719,17 +719,10 @@ export default function App() {
     };
   }, [screen, gameType]);
 
-  // Setup Leaderboard 3-second alternation effect
+  // Setup Leaderboard fetch on screen change
   useEffect(() => {
     if (screen !== 'leaderboard') return;
-    
     fetchLeaderboard();
-
-    const interval = setInterval(() => {
-      setActiveLeaderboardType(prev => prev === 'decade' ? 'song' : 'decade');
-    }, 3000);
-
-    return () => clearInterval(interval);
   }, [screen]);
 
   // Helper to format level display code on the leaderboard
