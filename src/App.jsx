@@ -746,49 +746,56 @@ export default function App() {
             <span className="hud-song-counter">{totalCount + 1} out of 10</span>
           </div>
 
-          {/* Smaller Vector-Styled Retro Cassette Tape Play Button */}
+          {/* Vector Cassette Tape Play Button (Matching Picture 1) */}
           <div 
             className={`vector-cassette-tape ${isPlaying ? 'playing' : ''}`}
             onClick={togglePlay}
             title="Tap to Play/Pause Audio"
           >
-            {/* Corner Screws */}
+            {/* Screws */}
             <div className="v-screw top-left">⊕</div>
             <div className="v-screw top-right">⊕</div>
 
-            {/* Top Red Stripe Label */}
+            {/* Top Spine Paper Label */}
             <div className="v-cassette-label">
               <div className="v-red-stripe"></div>
               <div className="v-label-content">
-                <span className="v-badge-a">A</span>
+                <span className="v-badge-a">B</span>
                 <span className="v-label-title">
                   {isPlaying ? "▶ PLAYING CLIP..." : "⚡ GRATEFUL DEAD LIVE TAPE"}
                 </span>
-                <span className="v-label-boxes">☐ IN ☐ OUT</span>
+                <span className="v-label-boxes">N.R. [ &nbsp; &nbsp; ] ☐ IN ☐ OUT</span>
               </div>
             </div>
 
-            {/* Center Ribbed Texture Frame & Window */}
+            {/* Center Dark Window Panel */}
             <div className="v-window-outer">
               <div className="v-ribbed-left"></div>
 
-              {/* Clear Window with Tape Spools & Red Teeth Hubs */}
-              <div className="v-glass-window">
-                <div className={`v-tape-spool left ${isPlaying ? 'spinning' : ''}`}>
-                  <div className="v-white-hub">
-                    <div className="v-red-tooth t1"></div>
-                    <div className="v-red-tooth t2"></div>
-                    <div className="v-red-tooth t3"></div>
+              {/* Single Connected Glass Panel with Blue Hubs & Center Reflection */}
+              <div className="v-center-glass-panel">
+                {/* Left Reel with Blue Hub & Red Tooth Tab */}
+                <div className={`v-gear-reel left ${isPlaying ? 'spinning' : ''}`}>
+                  <div className="v-outer-spool"></div>
+                  <div className="v-gear-teeth-ring">
+                    <div className="v-blue-hub"></div>
+                    <div className="v-red-tab"></div>
                   </div>
                 </div>
 
-                <div className="v-tape-bridge"></div>
+                {/* Center Glass Window Column with Light Blue Translucent Reflection */}
+                <div className="v-center-window-column">
+                  <div className="v-glass-reflection"></div>
+                  <div className="v-tape-roll-left"></div>
+                  <div className="v-tape-roll-right"></div>
+                </div>
 
-                <div className={`v-tape-spool right ${isPlaying ? 'spinning' : ''}`}>
-                  <div className="v-white-hub">
-                    <div className="v-red-tooth t1"></div>
-                    <div className="v-red-tooth t2"></div>
-                    <div className="v-red-tooth t3"></div>
+                {/* Right Reel with Blue Hub & Red Tooth Tab */}
+                <div className={`v-gear-reel right ${isPlaying ? 'spinning' : ''}`}>
+                  <div className="v-outer-spool"></div>
+                  <div className="v-gear-teeth-ring">
+                    <div className="v-blue-hub"></div>
+                    <div className="v-red-tab"></div>
                   </div>
                 </div>
               </div>
