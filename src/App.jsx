@@ -809,28 +809,28 @@ export default function App() {
       {/* Screen: Grand Finale Year Bonus Round */}
       {screen === 'year_bonus' && (
         <div className="game-card bg-reveal">
-          <div className="reveal-center-card" style={{ width: '84%', top: '44%' }}>
-            <div style={{ fontFamily: 'Sancreek, serif', fontSize: '0.85rem', color: '#ffd54f', textShadow: '1px 1px 2px #000', marginBottom: '0.2rem' }}>
+          <div className="bonus-round-card">
+            <div style={{ fontFamily: 'Sancreek, serif', fontSize: '0.92rem', color: '#ffd54f', textShadow: '1px 1px 3px #000', marginBottom: '0.2rem', letterSpacing: '0.5px' }}>
               ⚡ BONUS ROUND ⚡
             </div>
             
-            <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 'bold', fontSize: '0.58rem', color: '#eeddbb', marginBottom: '0.4rem' }}>
+            <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 'bold', fontSize: '0.58rem', color: '#eeddbb', marginBottom: '0.5rem' }}>
               SCORE: <span style={{ color: '#ffd54f' }}>{score} PTS</span> • <span style={{ color: '#a5d6a7' }}>{correctCount} OF 10 CORRECT</span>
             </div>
 
             {/* REVEAL CONCERT VENUE & LOCATION HERE */}
-            <div style={{ background: 'rgba(11, 2, 6, 0.7)', border: '1px solid #c29b53', borderRadius: '6px', padding: '0.35rem', marginBottom: '0.6rem', textAlign: 'center' }}>
-              <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 900, fontSize: '0.72rem', color: '#ffd54f' }}>
+            <div style={{ background: 'rgba(11, 2, 6, 0.75)', border: '1px solid #c29b53', borderRadius: '6px', padding: '0.4rem 0.5rem', marginBottom: '0.6rem', textAlign: 'center', width: '100%', boxSizing: 'border-box' }}>
+              <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 900, fontSize: '0.74rem', color: '#ffd54f' }}>
                 {yearGuessResult && yearGuessResult.show ? yearGuessResult.show.venue : (question && question.showDetails ? question.showDetails.venue : 'HISTORIC GRATEFUL DEAD CONCERT')}
               </div>
-              <div style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.56rem', color: '#eeddbb' }}>
+              <div style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.56rem', color: '#eeddbb', marginTop: '1px' }}>
                 {yearGuessResult && yearGuessResult.show ? `${yearGuessResult.show.city}, ${yearGuessResult.show.state}` : (question && question.showDetails ? question.showDetails.location : '')}
               </div>
             </div>
 
             {!yearGuessResult ? (
-              <>
-                <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 'bold', fontSize: '0.62rem', color: '#eeddbb', marginBottom: '0.4rem' }}>
+              <div style={{ width: '100%' }}>
+                <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 'bold', fontSize: '0.60rem', color: '#eeddbb', marginBottom: '0.45rem' }}>
                   GUESS THE YEAR OF THIS SHOW FOR +500 PTS:
                 </div>
                 <div className="year-choices-grid">
@@ -844,9 +844,9 @@ export default function App() {
                     </button>
                   ))}
                 </div>
-              </>
+              </div>
             ) : (
-              <div className="year-result-container">
+              <div className="year-result-container" style={{ width: '100%' }}>
                 {yearGuessResult.correct ? (
                   <div className="year-result-correct">
                     ⚡ RIGHT ON! +500 BONUS POINTS! ⚡
@@ -859,22 +859,22 @@ export default function App() {
 
                 {/* Leaderboard Name Entry */}
                 {!scoreSaved && score > 0 ? (
-                  <div style={{ marginTop: '0.5rem', background: 'rgba(11, 2, 6, 0.8)', padding: '0.4rem', borderRadius: '6px', border: '1px solid #c29b53' }}>
-                    <div style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.54rem', color: '#eeddbb', marginBottom: '0.25rem', fontWeight: 'bold' }}>
+                  <div style={{ marginTop: '0.5rem', background: 'rgba(11, 2, 6, 0.85)', padding: '0.45rem', borderRadius: '6px', border: '1px solid #c29b53', width: '100%', boxSizing: 'border-box' }}>
+                    <div style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.54rem', color: '#eeddbb', marginBottom: '0.3rem', fontWeight: 'bold' }}>
                       ENTER YOUR NAME FOR LEADERBOARD:
                     </div>
                     <input 
                       type="text" 
                       maxLength="10"
                       className="gameover-name-input"
-                      style={{ fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center', width: '80%' }}
+                      style={{ fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center', width: '85%' }}
                       placeholder="YOUR NAME"
                       value={playerInitials}
                       onChange={e => setPlayerInitials(e.target.value.toUpperCase())}
                     />
                     <button 
                       className="year-choice-btn" 
-                      style={{ marginTop: '0.35rem', padding: '0.25rem 0.6rem', fontSize: '0.65rem', width: '80%' }} 
+                      style={{ marginTop: '0.4rem', padding: '0.3rem 0.6rem', fontSize: '0.65rem', width: '85%' }} 
                       onClick={submitHighScore}
                     >
                       SUBMIT SCORE

@@ -1741,6 +1741,27 @@ body {
   transition: all 0.15s ease-in-out;
 }
 
+/* Grand Finale Bonus Round Card Centering */
+.bonus-round-card {
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 82%;
+  max-width: 260px;
+  background: rgba(26, 6, 13, 0.95);
+  border: 2px solid #c29b53;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.85);
+  padding: 0.8rem 0.6rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 20;
+}
+
 .year-choice-btn:hover {
   background: #c29b53;
   color: #1a060d;
