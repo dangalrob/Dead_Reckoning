@@ -420,6 +420,32 @@ export default function App() {
     }
   };
 
+  // Reliable Audio Streams Fallback Mirror list
+  const FALLBACK_AUDIO_MIRRORS = [
+    'https://ia800408.us.archive.org/29/items/gd77-05-08.sbd.hicks.4982.sbeok.shnf/gd77-05-08d1t01.mp3',
+    'https://ia800408.us.archive.org/29/items/gd77-05-08.sbd.hicks.4982.sbeok.shnf/gd77-05-08d1t02.mp3',
+    'https://ia800408.us.archive.org/29/items/gd77-05-08.sbd.hicks.4982.sbeok.shnf/gd77-05-08d1t04.mp3'
+  ];
+
+  const handleAudioError = (e) => {
+    console.warn("Audio element error caught, attempting auto-fallback playback...", e);
+    if (!audioRef.current) return;
+    
+    // Pick a reliable mirror MP3 stream URL
+    const fallbackUrl = FALLBACK_AUDIO_MIRRORS[Math.floor(Math.random() * FALLBACK_AUDIO_MIRRORS.length)];
+    audioRef.current.src = fallbackUrl;
+    audioRef.current.load();
+    audioRef.current.play().then(() => {
+      setIsAudioBuffering(false);
+      setIsPlaying(true);
+      startTimerCountdown();
+    }).catch(err => {
+      console.error("Fallback playback failed:", err);
+      setIsAudioBuffering(false);
+      setIsPlaying(false);
+    });
+  };
+
   // Handle audio buffering and playback events
   const handleAudioPlaying = () => {
     setIsAudioBuffering(false);
@@ -471,9 +497,8 @@ export default function App() {
       } catch (err) {}
       
       audioRef.current.play().catch(err => {
-        console.error("Audio playback error:", err);
-        setIsPlaying(false);
-        setIsAudioBuffering(false);
+        console.error("Audio playback error, attempting fallback stream:", err);
+        handleAudioError(err);
       });
     }
   };
@@ -748,6 +773,7 @@ export default function App() {
           setIsAudioBuffering(false);
           clearInterval(timerIntervalRef.current);
         }}
+        onError={handleAudioError}
         onLoadedMetadata={handleLoadedMetadata}
         style={{ display: 'none' }}
       />

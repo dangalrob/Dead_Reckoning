@@ -587,9 +587,20 @@ app.post('/api/game/start-session', async (req, res) => {
       const showDetailsRes = await axios.get(`https://api.relisten.net/api/v2/artists/grateful-dead/shows/${selectedShow.date}`);
       const sources = showDetailsRes.data ? showDetailsRes.data.sources : [];
       if (sources && sources.length > 0) {
-        const source = sources[0];
-        const allTracks = source.sets.flatMap(set => set.tracks || []);
-        validTracks = allTracks.filter(track => isValidSong(track.title) && track.mp3_url);
+        // Iterate through sources to find the best soundboard/audience recording with valid tracks
+        for (const s of sources) {
+          const allTracks = (s.sets || []).flatMap(set => set.tracks || []);
+          const candidates = allTracks.filter(track => isValidSong(track.title) && track.mp3_url && track.mp3_url.startsWith('http'));
+          if (candidates.length >= 5) {
+            validTracks = candidates;
+            break;
+          }
+        }
+        // Fallback to first source if loop didn't find >= 5
+        if (validTracks.length === 0 && sources[0].sets) {
+          const allTracks = sources[0].sets.flatMap(set => set.tracks || []);
+          validTracks = allTracks.filter(track => isValidSong(track.title) && track.mp3_url);
+        }
       }
     } catch (e) {
       console.warn("Relisten fetch error for show, using fallback:", e.message);
