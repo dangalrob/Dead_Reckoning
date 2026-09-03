@@ -2143,6 +2143,28 @@ body {
   text-shadow: none;
 }
 
+.share-modal-leaderboard-btn {
+  background: linear-gradient(135deg, #ffd54f 0%, #ffb300 100%);
+  color: #1a060d;
+  border: 1px solid #ffe082;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 0.72rem;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(255, 213, 79, 0.4);
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
+}
+
+.share-modal-leaderboard-btn:hover {
+  background: linear-gradient(135deg, #ffb300 0%, #ffa000 100%);
+  transform: scale(1.02);
+  box-shadow: 0 6px 16px rgba(255, 213, 79, 0.6);
+}
+
 /* Year Bonus Round Layout & Choice Grid */
 .year-choices-grid {
   display: grid;

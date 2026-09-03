@@ -682,11 +682,14 @@ export default function App() {
     }
   };
 
-  // Submit high score initials
+  // Submit high score initials (Step 1 -> Step 2: Opens Share Modal)
   const submitHighScore = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
     const nameToSubmit = playerInitials.trim();
-    if (!nameToSubmit || nameToSubmit.length > 10) return;
+    if (!nameToSubmit || nameToSubmit.length > 10) {
+      setShowShareModal(true);
+      return;
+    }
 
     try {
       const deviceId = getDeviceId();
@@ -701,10 +704,10 @@ export default function App() {
       setScoreSaved(true);
       fetchLeaderboard();
       setActiveLeaderboardType(gameType);
-      setScreen('leaderboard');
+      setShowShareModal(true);
     } catch (err) {
       console.error(err);
-      alert("Could not submit high score.");
+      setShowShareModal(true);
     }
   };
 
@@ -1267,12 +1270,6 @@ export default function App() {
                 {scoreSaved ? "✓ SCORE SAVED TO LEADERBOARD!" : "SCORE IS ZERO - PLAY AGAIN!"}
               </div>
             )}
-
-            <div style={{ marginTop: '0.4rem', width: '100%', textAlign: 'center' }}>
-              <button className="share-score-trigger-btn" onClick={() => setShowShareModal(true)}>
-                📤 SHARE RESULTS
-              </button>
-            </div>
           </div>
 
           {/* Action buttons mapping to bottom red and blue boxes */}
@@ -1280,7 +1277,11 @@ export default function App() {
             <button className="hotspot-gameover-submit" onClick={submitHighScore}>
               SUBMIT SCORE
             </button>
-          ) : null}
+          ) : (
+            <button className="hotspot-gameover-submit" onClick={() => setShowShareModal(true)}>
+              SHARE RESULTS
+            </button>
+          )}
           <button className="hotspot-gameover-menu" onClick={returnToMainMenu}>
             MAIN MENU
           </button>
@@ -1464,6 +1465,18 @@ export default function App() {
               </button>
               <button className="share-btn share-btn-facebook" onClick={shareToFacebook}>
                 📘 Facebook
+              </button>
+            </div>
+
+            <div style={{ marginTop: '0.8rem', width: '100%', textAlign: 'center' }}>
+              <button 
+                className="share-modal-leaderboard-btn" 
+                onClick={() => {
+                  setShowShareModal(false);
+                  setScreen('leaderboard');
+                }}
+              >
+                🏆 VIEW LEADERBOARD ➡️
               </button>
             </div>
           </div>
