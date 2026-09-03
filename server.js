@@ -595,7 +595,7 @@ app.post('/api/game/start-session', async (req, res) => {
   try {
     let validTracks = [];
     try {
-      const showDetailsRes = await axios.get(`https://api.relisten.net/api/v2/artists/grateful-dead/shows/${selectedShow.date}`);
+      const showDetailsRes = await axios.get(`https://api.relisten.net/api/v2/artists/grateful-dead/shows/${selectedShow.date}`, { timeout: 2500 });
       const sources = showDetailsRes.data ? showDetailsRes.data.sources : [];
       if (sources && sources.length > 0) {
         // Iterate through sources to find the best soundboard/audience recording with valid tracks

@@ -176,6 +176,7 @@ export default function App() {
   const audioRef = useRef(null);
   const timerIntervalRef = useRef(null);
   const nextTrackRef = useRef(null);
+  const bufferingTimeoutRef = useRef(null);
 
   // Preload all app background images on startup for instant 0ms screen transitions
   useEffect(() => {
@@ -446,15 +447,30 @@ export default function App() {
     });
   };
 
+  const setBufferingWithTimeout = (val) => {
+    setIsAudioBuffering(val);
+    clearTimeout(bufferingTimeoutRef.current);
+    if (val) {
+      bufferingTimeoutRef.current = setTimeout(() => {
+        console.warn("Buffering timeout reached (3.5s), forcing audio stream fallback...");
+        setIsAudioBuffering(false);
+        if (audioRef.current && !isPlaying) {
+          handleAudioError();
+        }
+      }, 3500);
+    }
+  };
+
   // Handle audio buffering and playback events
   const handleAudioPlaying = () => {
+    clearTimeout(bufferingTimeoutRef.current);
     setIsAudioBuffering(false);
     setIsPlaying(true);
     startTimerCountdown();
   };
 
   const handleAudioWaiting = () => {
-    setIsAudioBuffering(true);
+    setBufferingWithTimeout(true);
     clearInterval(timerIntervalRef.current);
   };
 
@@ -484,11 +500,12 @@ export default function App() {
 
     if (isPlaying || isAudioBuffering) {
       audioRef.current.pause();
+      clearTimeout(bufferingTimeoutRef.current);
       setIsPlaying(false);
       setIsAudioBuffering(false);
       clearInterval(timerIntervalRef.current);
     } else {
-      setIsAudioBuffering(true);
+      setBufferingWithTimeout(true);
       setHasPlayedOnce(true);
       try {
         if (audioRef.current.currentTime < question.startOffset) {
