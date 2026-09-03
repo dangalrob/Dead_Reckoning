@@ -134,6 +134,17 @@ function saveUserData(deviceId, deviceMeta = null, latestName = null) {
   }
 }
 
+// Helper: Seeded pseudo-random generator for deterministic daily clips
+function getSeededRandom(seedString) {
+  let hash = 0;
+  for (let i = 0; i < seedString.length; i++) {
+    hash = ((hash << 5) - hash) + seedString.charCodeAt(i);
+    hash |= 0;
+  }
+  const x = Math.sin(hash++) * 10000;
+  return x - Math.floor(x);
+}
+
 // Helper: Send email notification whenever someone submits a score to the leaderboard
 async function sendLeaderboardEmailNotification({ name, score, difficulty, gameType, deviceId }) {
   const notificationEmail = process.env.NOTIFICATION_EMAIL || process.env.ADMIN_EMAIL;
@@ -687,7 +698,24 @@ app.get('/api/game/session-track', (req, res) => {
   }
 
   const track = game.tracks[idx];
-  const startOffset = Math.floor(Math.random() * Math.max(1, (track.duration || 300) - 25));
+  const duration = track.duration || 300;
+  
+  let startOffset = 35;
+  if (game.mode === 'daily') {
+    const todayDateStr = new Date().toISOString().split('T')[0];
+    const seedVal = getSeededRandom(`${todayDateStr}_track_${idx}_${track.trackName}`);
+    if (duration > 70) {
+      const minStart = 35; // Skip intro tuning and audience chatter
+      const maxStart = Math.min(Math.floor(duration * 0.55), duration - 30);
+      startOffset = Math.floor(minStart + seedVal * (maxStart - minStart));
+    }
+  } else {
+    if (duration > 70) {
+      const minStart = 35; // Skip intro tuning and audience chatter
+      const maxStart = Math.min(Math.floor(duration * 0.55), duration - 30);
+      startOffset = Math.floor(minStart + Math.random() * (maxStart - minStart));
+    }
+  }
 
   res.json({
     sessionId,
