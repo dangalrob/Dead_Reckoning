@@ -817,14 +817,16 @@ function loadLeaderboardData() {
     const data = fs.readFileSync(LEADERBOARD_FILE, 'utf8');
     const parsed = JSON.parse(data);
     if (Array.isArray(parsed)) {
-      return { decade: parsed, song: [] };
+      return { daily: [], allTime: parsed, decade: parsed, song: [] };
     }
     return {
+      daily: parsed.daily || [],
+      allTime: parsed.allTime || parsed.decade || [],
       decade: parsed.decade || [],
       song: parsed.song || []
     };
   } catch (err) {
-    return { decade: [], song: [] };
+    return { daily: [], allTime: [], decade: [], song: [] };
   }
 }
 
@@ -857,25 +859,43 @@ app.post('/api/user/activity', async (req, res) => {
   }
 });
 
-// Endpoint: Fetch high score leaderboard
+// Endpoint: Fetch high score leaderboard (Daily & All Time)
 app.get('/api/game/leaderboard', async (req, res) => {
   try {
     if (dbPool) {
-      const allQuery = await dbPool.query(
+      const dailyQuery = await dbPool.query(
+        `SELECT name, score, difficulty, created_at::text as date FROM leaderboard WHERE created_at >= CURRENT_DATE ORDER BY score DESC LIMIT 10;`
+      );
+      const allTimeQuery = await dbPool.query(
         `SELECT name, score, difficulty, created_at::text as date FROM leaderboard ORDER BY score DESC LIMIT 10;`
       );
       return res.json({
-        decade: allQuery.rows,
-        song: allQuery.rows
+        daily: dailyQuery.rows,
+        allTime: allTimeQuery.rows,
+        decade: allTimeQuery.rows,
+        song: dailyQuery.rows
       });
     }
 
     const scores = loadLeaderboardData();
-    const combined = [...(scores.song || []), ...(scores.decade || [])].sort((a, b) => b.score - a.score);
-    const topScores = combined.slice(0, 10);
+    const todayStr = new Date().toISOString().split('T')[0];
+    const combined = [
+      ...(scores.allTime || []),
+      ...(scores.daily || []),
+      ...(scores.decade || []),
+      ...(scores.song || [])
+    ];
+    const uniqueCombined = Array.from(new Map(combined.map(item => [item.name + '_' + item.score + '_' + (item.date || ''), item])).values())
+      .sort((a, b) => b.score - a.score);
+
+    const dailyScores = uniqueCombined.filter(item => item.date && item.date.startsWith(todayStr)).slice(0, 10);
+    const allTimeScores = uniqueCombined.slice(0, 10);
+
     res.json({
-      decade: topScores,
-      song: topScores
+      daily: dailyScores,
+      allTime: allTimeScores,
+      decade: allTimeScores,
+      song: dailyScores
     });
   } catch (err) {
     console.error("Leaderboard fetch error:", err);
@@ -894,12 +914,47 @@ app.post('/api/leaderboard/clear', async (req, res) => {
         client.release();
       }
     }
-    const emptyScores = { decade: [], song: [] };
+    const emptyScores = { daily: [], allTime: [], decade: [], song: [] };
     fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(emptyScores, null, 2), 'utf8');
     res.json(emptyScores);
   } catch (err) {
     console.error("Clear leaderboard error:", err);
     res.status(500).json({ error: "Failed to reset leaderboard." });
+  }
+});
+
+// Endpoint: Clear current device's daily leaderboard scores
+app.post('/api/leaderboard/clear-device-today', async (req, res) => {
+  const { deviceId } = req.body;
+  if (!deviceId) return res.status(400).json({ error: "deviceId is required" });
+
+  try {
+    if (dbPool) {
+      const client = await dbPool.connect();
+      try {
+        await client.query(
+          `DELETE FROM leaderboard WHERE device_id = $1 AND created_at >= CURRENT_DATE;`,
+          [deviceId]
+        );
+      } finally {
+        client.release();
+      }
+    }
+
+    const scores = loadLeaderboardData();
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (scores.daily) {
+      scores.daily = scores.daily.filter(item => !(item.deviceId === deviceId && item.date && item.date.startsWith(todayStr)));
+    }
+    if (scores.allTime) {
+      scores.allTime = scores.allTime.filter(item => !(item.deviceId === deviceId && item.date && item.date.startsWith(todayStr)));
+    }
+    fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(scores, null, 2), 'utf8');
+
+    res.json({ success: true, message: "Cleared today's device scores." });
+  } catch (err) {
+    console.error("Clear device daily scores error:", err);
+    res.status(500).json({ error: "Failed to clear device scores." });
   }
 });
 
@@ -938,15 +993,22 @@ app.post('/api/game/leaderboard', async (req, res) => {
 
     // Always record locally as double backup
     const scores = loadLeaderboardData();
-    scores[mode].push({
+    const todayStr = new Date().toISOString().split('T')[0];
+    const newEntry = {
       name: sanitizedName,
       score,
       difficulty: difficulty || 'medium',
       deviceId: deviceId || null,
-      date: new Date().toISOString().split('T')[0]
-    });
-    scores[mode].sort((a, b) => b.score - a.score);
-    scores[mode] = scores[mode].slice(0, 100);
+      date: todayStr
+    };
+    if (!scores.daily) scores.daily = [];
+    if (!scores.allTime) scores.allTime = [];
+    scores.daily.push(newEntry);
+    scores.allTime.push(newEntry);
+
+    scores.daily = scores.daily.filter(item => item.date && item.date.startsWith(todayStr)).sort((a, b) => b.score - a.score).slice(0, 100);
+    scores.allTime = scores.allTime.sort((a, b) => b.score - a.score).slice(0, 100);
+
     fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(scores, null, 2), 'utf8');
 
     // Trigger asynchronous email notification (non-blocking)
@@ -959,18 +1021,25 @@ app.post('/api/game/leaderboard', async (req, res) => {
     }).catch(e => console.error("Email dispatch async error:", e.message));
 
     if (dbPool) {
-      const allQuery = await dbPool.query(
+      const dailyQuery = await dbPool.query(
+        `SELECT name, score, difficulty, created_at::text as date FROM leaderboard WHERE created_at >= CURRENT_DATE ORDER BY score DESC LIMIT 10;`
+      );
+      const allTimeQuery = await dbPool.query(
         `SELECT name, score, difficulty, created_at::text as date FROM leaderboard ORDER BY score DESC LIMIT 10;`
       );
       return res.json({
-        decade: allQuery.rows,
-        song: allQuery.rows
+        daily: dailyQuery.rows,
+        allTime: allTimeQuery.rows,
+        decade: allTimeQuery.rows,
+        song: dailyQuery.rows
       });
     }
 
     res.json({
-      decade: scores.decade.slice(0, 10),
-      song: scores.song.slice(0, 10)
+      daily: scores.daily.slice(0, 10),
+      allTime: scores.allTime.slice(0, 10),
+      decade: scores.allTime.slice(0, 10),
+      song: scores.daily.slice(0, 10)
     });
   } catch (err) {
     console.error("Score submission error:", err);

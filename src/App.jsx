@@ -141,8 +141,8 @@ export default function App() {
   const [lastPointsEarned, setLastPointsEarned] = useState(0);
   const [lastSpeedBonus, setLastSpeedBonus] = useState(0);
   const [lastStreakBonus, setLastStreakBonus] = useState(0);
-  const [leaderboard, setLeaderboard] = useState({ decade: [], song: [] });
-  const [activeLeaderboardType, setActiveLeaderboardType] = useState('song');
+  const [leaderboard, setLeaderboard] = useState({ daily: [], allTime: [] });
+  const [leaderboardTab, setLeaderboardTab] = useState('daily'); // 'daily' | 'allTime'
   const [playerInitials, setPlayerInitials] = useState(() => {
     return localStorage.getItem('dr_player_name') || '';
   });
@@ -154,6 +154,22 @@ export default function App() {
     setPlayerInitials(sanitized);
     localStorage.setItem('dr_player_name', sanitized);
   };
+
+  // Daily play restriction state
+  const [hasPlayedToday, setHasPlayedToday] = useState(() => {
+    const lastPlayed = localStorage.getItem('dr_last_played_date');
+    const todayStr = new Date().toISOString().split('T')[0];
+    return lastPlayed === todayStr;
+  });
+
+  const markPlayedToday = () => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    localStorage.setItem('dr_last_played_date', todayStr);
+    setHasPlayedToday(true);
+  };
+
+  // Dan's secret admin control modal state
+  const [danAdminModalOpen, setDanAdminModalOpen] = useState(false);
 
   // Device audit report modal states
   const [auditModalOpen, setAuditModalOpen] = useState(false);
@@ -250,13 +266,18 @@ export default function App() {
   };
 
   const startConcertSession = async (mode = 'daily') => {
+    if (mode === 'daily' && hasPlayedToday) {
+      alert("You've already played today's show! Come back tomorrow to play again.");
+      return;
+    }
+
     setLoading(true);
-    setGameType('song');
     setScore(0);
     setStreak(0);
     setLives(3);
     setCorrectCount(0);
     setTotalCount(0);
+    setQuestion(null);
     setScoreSaved(false);
     setYearGuessResult(null);
     setPostShowData(null);
@@ -342,6 +363,7 @@ export default function App() {
   };
 
   const loadPostShowReport = async () => {
+    markPlayedToday();
     setLoading(true);
     try {
       const res = await axios.get(`/api/game/post-show-report?sessionId=${sessionId}`);
@@ -359,7 +381,10 @@ export default function App() {
   const fetchLeaderboard = async () => {
     try {
       const res = await axios.get('/api/game/leaderboard');
-      setLeaderboard(res.data);
+      setLeaderboard({
+        daily: res.data.daily || res.data.song || [],
+        allTime: res.data.allTime || res.data.decade || []
+      });
     } catch (err) {
       console.error("Leaderboard loading error:", err);
     }
@@ -577,7 +602,7 @@ export default function App() {
         setStreak(0);
         setLives(prev => prev - 1);
         const penalty = 50;
-        setScore(prev => Math.max(0, prev - penalty));
+        setScore(prev => prev - penalty);
         setLastPointsEarned(-penalty);
         setLastSpeedBonus(0);
       }
@@ -636,7 +661,7 @@ export default function App() {
           setStreak(0);
           setLives(prev => prev - 1);
           const penalty = 50;
-          setScore(prev => Math.max(0, prev - penalty));
+          setScore(prev => prev - penalty);
           setLastPointsEarned(-penalty);
           setLastSpeedBonus(0);
         }
@@ -669,7 +694,7 @@ export default function App() {
     if (!window.confirm("Are you sure you want to clear the public Leaderboard scores? (Device Audit logs will be preserved).")) return;
     try {
       await axios.post('/api/leaderboard/clear');
-      setLeaderboard({ decade: [], song: [] });
+      setLeaderboard({ daily: [], allTime: [] });
       await fetchLeaderboard();
       if (auditModalOpen) {
         const res = await axios.get('/api/admin/device-report');
@@ -703,7 +728,7 @@ export default function App() {
       });
       setScoreSaved(true);
       fetchLeaderboard();
-      setActiveLeaderboardType(gameType);
+      setLeaderboardTab('daily');
       setShowShareModal(true);
     } catch (err) {
       console.error(err);
@@ -825,10 +850,10 @@ export default function App() {
 
           {/* Buttons with dynamic text overlays */}
           <button 
-            className="hotspot-decade" 
+            className={`hotspot-decade ${hasPlayedToday ? 'played-today-disabled' : ''}`}
             onClick={() => startConcertSession('daily')}
           >
-            🌟 DAILY SHOW CHALLENGE
+            {hasPlayedToday ? "⚡ PLAYED TODAY - SEE YOU TOMORROW 🎸" : "🌟 DAILY SHOW CHALLENGE"}
           </button>
           
           <button 
@@ -1035,11 +1060,11 @@ export default function App() {
 
           {/* Action Hotspot Button (NEXT ROUND or GRAND FINALE) */}
           {lives === 0 ? (
-            <button className="hotspot-reveal-action" onClick={() => setScreen('gameover')}>
+            <button className="hotspot-reveal-action" onClick={() => { markPlayedToday(); setScreen('gameover'); }}>
               See Results
             </button>
           ) : totalCount >= 10 ? (
-            <button className="hotspot-reveal-action" onClick={() => setScreen('year_bonus')}>
+            <button className="hotspot-reveal-action" onClick={() => { markPlayedToday(); setScreen('year_bonus'); }}>
               Grand Finale ⚡
             </button>
           ) : (
@@ -1224,12 +1249,12 @@ export default function App() {
       {/* Screen: Game Over / Tour Complete */}
       {screen === 'gameover' && (
         <div className="game-card bg-gameover">
-          <div className="gameover-dark-card">
+          <div className="gameover-dark-card centered-loss-card">
             <div className="gameover-status-title">
               {lives === 0 ? "BETTER LUCK NEXT TIME" : "TOUR COMPLETE"}
             </div>
             
-            <div className="gameover-results-breakdown">
+            <div className="gameover-results-breakdown centered-breakdown">
               {lives === 0 && guessResult && (
                 <div className="gameover-reveal-correct">
                   <div className="gameover-reveal-label">CORRECT SONG:</div>
@@ -1237,21 +1262,21 @@ export default function App() {
                 </div>
               )}
               
-              <div className="gameover-stat-row">
+              <div className="gameover-stat-row centered-stat-row">
                 <span className="gameover-stat-label">FINAL SCORE:</span>
                 <span className="gameover-stat-val">{score}</span>
               </div>
-              <div className="gameover-stat-row">
+              <div className="gameover-stat-row centered-stat-row">
                 <span className="gameover-stat-label">TOUR RANK:</span>
                 <span className="gameover-stat-val-rank">{getScoreTier(score)}</span>
               </div>
-              <div className="gameover-stat-row" style={{ borderBottom: 'none' }}>
+              <div className="gameover-stat-row centered-stat-row" style={{ borderBottom: 'none' }}>
                 <span className="gameover-stat-label">SONGS PLAYED:</span>
                 <span className="gameover-stat-val">{totalCount} OF 10</span>
               </div>
             </div>
 
-            {!scoreSaved && score > 0 ? (
+            {!scoreSaved ? (
               <div className="gameover-name-entry">
                 <div className="gameover-entry-label">ENTER NAME FOR LEADERBOARD:</div>
                 <input 
@@ -1267,13 +1292,13 @@ export default function App() {
               </div>
             ) : (
               <div className="gameover-saved-msg">
-                {scoreSaved ? "✓ SCORE SAVED TO LEADERBOARD!" : "SCORE IS ZERO - PLAY AGAIN!"}
+                ✓ SCORE SAVED TO LEADERBOARD!
               </div>
             )}
           </div>
 
           {/* Action buttons mapping to bottom red and blue boxes */}
-          {!scoreSaved && score > 0 ? (
+          {!scoreSaved ? (
             <button className="hotspot-gameover-submit" onClick={submitHighScore}>
               SUBMIT SCORE
             </button>
@@ -1296,6 +1321,22 @@ export default function App() {
             CONCERT LEADERBOARD
           </div>
 
+          {/* Daily vs All-Time Leaderboard Tabs */}
+          <div className="leaderboard-tabs">
+            <button 
+              className={`leaderboard-tab-btn ${leaderboardTab === 'daily' ? 'active' : ''}`}
+              onClick={() => setLeaderboardTab('daily')}
+            >
+              📅 TODAY'S SHOW
+            </button>
+            <button 
+              className={`leaderboard-tab-btn ${leaderboardTab === 'allTime' ? 'active' : ''}`}
+              onClick={() => setLeaderboardTab('allTime')}
+            >
+              🏆 ALL-TIME BEST
+            </button>
+          </div>
+
           {/* Dynamic Scoreboard Table Overlay */}
           <div className="leaderboard-table-overlay">
             <div className="overlay-header">
@@ -1304,8 +1345,8 @@ export default function App() {
               <span className="overlay-score-col">SCORE</span>
             </div>
             
-            {(leaderboard.song || leaderboard.decade || []).length > 0 ? (
-              (leaderboard.song || leaderboard.decade || []).slice(0, 10).map((item, idx) => {
+            {((leaderboardTab === 'daily' ? leaderboard.daily : leaderboard.allTime) || []).length > 0 ? (
+              ((leaderboardTab === 'daily' ? leaderboard.daily : leaderboard.allTime) || []).slice(0, 10).map((item, idx) => {
                 return (
                   <div key={idx} className="overlay-row">
                     <span className="overlay-rank-col">{idx + 1}</span>
@@ -1316,13 +1357,20 @@ export default function App() {
               })
             ) : (
               <div className="no-tours-msg">
-                NO REGISTERED TOURS
+                {leaderboardTab === 'daily' ? 'NO TOURS TODAY' : 'NO REGISTERED TOURS'}
               </div>
             )}
           </div>
 
           {/* Interactive Play Again placard Hotspot */}
           <button className="hotspot-leaderboard-back" onClick={returnToMainMenu}></button>
+
+          {/* Secret Invisible Dan Admin Hotspot (Upper Left Area of Leaderboard placard) */}
+          <button 
+            className="hotspot-leaderboard-secret-dan" 
+            onClick={() => setDanAdminModalOpen(true)}
+            title="Dan's Admin Controls"
+          ></button>
 
           {/* Secret Admin Device Audit Report Hotspot (Lower Right Hand Corner) */}
           <button 
@@ -1341,6 +1389,53 @@ export default function App() {
             }}
             title="Open Device Audit Report"
           ></button>
+        </div>
+      )}
+
+      {/* Secret Dan Admin Control Modal */}
+      {danAdminModalOpen && (
+        <div className="dan-admin-modal-overlay" onClick={() => setDanAdminModalOpen(false)}>
+          <div className="dan-admin-modal-card" onClick={e => e.stopPropagation()}>
+            <div className="dan-admin-modal-header">
+              <div className="dan-admin-modal-title">⚡ DAN'S SECRET ADMIN MENU ⚡</div>
+              <button className="dan-admin-modal-close" onClick={() => setDanAdminModalOpen(false)}>✕</button>
+            </div>
+
+            <div className="dan-admin-body">
+              <p className="dan-admin-subtitle">Select an action for this device:</p>
+              
+              <button 
+                className="dan-admin-btn clear-daily-btn"
+                onClick={async () => {
+                  if (!window.confirm("Clear all of this device's scores from today's daily leaderboard?")) return;
+                  try {
+                    const deviceId = getDeviceId();
+                    await axios.post('/api/leaderboard/clear-device-today', { deviceId });
+                    await fetchLeaderboard();
+                    alert("Cleared all scores from your device on today's daily leaderboard.");
+                    setDanAdminModalOpen(false);
+                  } catch (err) {
+                    console.error(err);
+                    alert("Failed to clear device scores.");
+                  }
+                }}
+              >
+                🗑️ Clear all scores from my device from the daily leaderboard
+              </button>
+
+              <button 
+                className="dan-admin-btn allow-replay-btn"
+                onClick={() => {
+                  localStorage.removeItem('dr_last_played_date');
+                  setHasPlayedToday(false);
+                  alert("Dan's daily limit reset! You can now play today's game again.");
+                  setDanAdminModalOpen(false);
+                }}
+              >
+                🎸 Allow Dan to play game again
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
